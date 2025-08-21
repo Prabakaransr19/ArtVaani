@@ -7,14 +7,14 @@ import { z } from 'zod';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { languages } from '@/lib/languages';
-import { Wand2, Loader2, Copy } from 'lucide-react';
+import { Wand2, Loader2, Copy, Send } from 'lucide-react';
 
 const formSchema = z.object({
   productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -63,6 +63,14 @@ export default function ProductListingPage() {
     navigator.clipboard.writeText(text);
     toast({
       title: 'Copied to clipboard!',
+    });
+  };
+
+  const handlePostProduct = () => {
+    // Placeholder for actual product posting logic
+    toast({
+      title: 'Product Posted!',
+      description: 'Your product has been successfully posted.',
     });
   };
 
@@ -123,12 +131,12 @@ export default function ProductListingPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="flex flex-col">
         <CardHeader>
           <CardTitle>Generated Content</CardTitle>
           <CardDescription>Review the AI-generated content below. Copy and use it in your listings.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 flex-1">
           {isLoading && (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <Loader2 className="size-12 animate-spin text-primary" />
@@ -168,6 +176,14 @@ export default function ProductListingPage() {
             )
           )}
         </CardContent>
+        {generatedListing && !isLoading && (
+            <CardFooter>
+                <Button onClick={handlePostProduct} className="w-full">
+                    <Send className="mr-2" />
+                    Post Product
+                </Button>
+            </CardFooter>
+        )}
       </Card>
     </div>
   );
