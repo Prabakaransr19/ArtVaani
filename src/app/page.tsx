@@ -8,7 +8,7 @@ import { ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function Home() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -33,7 +33,7 @@ export default function Home() {
         </div>
       </div>
       <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
-        <p>&copy; {year} ArtVaani. All rights reserved.</p>
+        <p>&copy; {year || new Date().getFullYear()} ArtVaani. All rights reserved.</p>
       </footer>
     </main>
   );
