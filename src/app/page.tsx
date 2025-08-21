@@ -1,9 +1,19 @@
+
+'use client';
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/icons';
 import { ArrowRight } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function Home() {
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-8">
       <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-2xl">
@@ -23,7 +33,7 @@ export default function Home() {
         </div>
       </div>
       <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} ArtVaani. All rights reserved.</p>
+        <p>&copy; {year} ArtVaani. All rights reserved.</p>
       </footer>
     </main>
   );
