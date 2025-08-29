@@ -13,7 +13,8 @@
         "addProduct": "Add Product",
         "storyCreation": "Story Creation",
         "discoverCrafts": "Discover Crafts",
-        "cart": "Cart"
+        "cart": "Cart",
+        "forArtisans": "For Artisans"
     },
     "dashboard": {
         "welcome": "Welcome, Artisan!",
@@ -123,5 +124,34 @@
         "title": "Checkout",
         "dummyMessage": "This is a dummy checkout page for demonstration. No real transaction will be made.",
         "backToShopping": "Back to Shopping"
+    },
+    "products": {
+        "becomeArtisan": {
+            "title": "Want to sell your crafts?",
+            "description": "Join our community of artisans and showcase your work to the world.",
+            "button": "Become a Seller"
+        }
+    },
+    "forArtisans": {
+        "title": "Become an Artisan",
+        "description": "Tell us a bit more about you and your craft to get started.",
+        "form": {
+            "fullName": { "label": "Full Name" },
+            "city": { "label": "City" },
+            "phoneNumber": { "label": "Phone Number" },
+            "artType": {
+                "label": "What kind of art do you create?",
+                "placeholder": "e.g., Pottery, Weaving, Painting"
+            },
+            "experience": {
+                "label": "Years of Experience",
+                "placeholder": "e.g., 5"
+            }
+        },
+        "button": "Join as an Artisan",
+        "success": {
+            "title": "Welcome, Artisan!",
+            "description": "Your artisan profile has been created. You now have access to all artisan tools."
+        }
     }
 }

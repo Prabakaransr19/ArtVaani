@@ -15,6 +15,7 @@ import {
   LogIn,
   ShoppingBag,
   ShoppingCart,
+  Palette,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -85,6 +86,7 @@ export default function DashboardLayout({
     { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false, requiresArtisan: false },
     // Buyer + Artisan
     { href: '/dashboard/cart', label: translations.sidebar.cart, icon: ShoppingCart, requiresAuth: true, requiresArtisan: false },
+    { href: '/dashboard/for-artisans', label: translations.sidebar.forArtisans, icon: Palette, requiresAuth: true, requiresArtisan: 'not-artisan' },
     // Artisan only
     { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true },
     { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true },
@@ -92,6 +94,9 @@ export default function DashboardLayout({
   ];
 
   const menuItems = allMenuItems.filter(item => {
+    if(item.requiresArtisan === 'not-artisan') {
+      return user && !isArtisan;
+    }
     if (item.requiresArtisan) {
         return user && isArtisan;
     }
@@ -119,6 +124,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/discovery')) return translations.sidebar.discoverCrafts;
     if (pathname.startsWith('/dashboard/cart')) return translations.sidebar.cart;
     if (pathname.startsWith('/dashboard/checkout')) return translations.checkout.title;
+    if (pathname.startsWith('/dashboard/for-artisans')) return translations.sidebar.forArtisans;
     return 'ArtVaani';
   };
 
@@ -200,8 +206,9 @@ export default function DashboardLayout({
                         <DropdownMenuLabel className="font-normal">
                             <div className="flex flex-col space-y-1">
                                 <p className="text-sm font-medium leading-none">{user.displayName || "Artisan"}</p>
+
                                 <p className="text-xs leading-none text-muted-foreground">
-                                {user.email || user.phoneNumber}
+                                {isArtisan ? 'Artisan Account' : 'Buyer Account'}
                                 </p>
                             </div>
                         </DropdownMenuLabel>

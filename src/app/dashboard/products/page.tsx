@@ -5,12 +5,14 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Palette } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, collection, serverTimestamp, getDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { useLanguage } from '@/context/language-context';
 
 const products = [
   {
@@ -79,6 +81,21 @@ export default function ProductsPage() {
     const { user } = useAuth();
     const router = useRouter();
     const { toast } = useToast();
+    const { translations } = useLanguage();
+    const [isArtisan, setIsArtisan] = useState(false);
+
+    useEffect(() => {
+        const checkUserRole = async () => {
+            if (user) {
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists() && userDoc.data().isArtisan) {
+                    setIsArtisan(true);
+                }
+            }
+        };
+        checkUserRole();
+    }, [user]);
 
     const handleAddToCart = async (product: typeof products[0]) => {
         if (!user) {
@@ -111,36 +128,54 @@ export default function ProductsPage() {
     }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {products.map((product) => (
-        <Card key={product.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-          <CardHeader className="p-0">
-             <div className="relative aspect-video">
-                <Image 
-                    src={product.image} 
-                    alt={product.name} 
-                    fill 
-                    className="object-cover"
-                    data-ai-hint={product.hint}
-                />
-             </div>
-          </CardHeader>
-          <CardContent className="p-4 flex-grow">
-            <div className="flex gap-2 mb-2">
-                {product.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-            </div>
-            <h3 className="text-lg font-semibold">{product.name}</h3>
-            <p className="text-muted-foreground mt-1">{product.price}</p>
-            <CardDescription className="mt-2 text-sm">{product.description}</CardDescription>
-          </CardContent>
-          <CardFooter className="p-4 mt-auto">
-            <Button className="w-full" onClick={() => handleAddToCart(product)}>
-              <ShoppingCart className="mr-2" />
-              Add to Cart
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+    <div className='flex flex-col gap-6'>
+        {user && !isArtisan && (
+            <Card className="bg-primary/10 border-primary/20">
+                <CardHeader className="flex-row items-center gap-4">
+                     <Palette className="size-8 text-primary" />
+                    <div>
+                        <CardTitle>{translations.products.becomeArtisan.title}</CardTitle>
+                        <CardDescription>{translations.products.becomeArtisan.description}</CardDescription>
+                    </div>
+                </CardHeader>
+                <CardFooter>
+                    <Button onClick={() => router.push('/dashboard/for-artisans')}>
+                        {translations.products.becomeArtisan.button}
+                    </Button>
+                </CardFooter>
+            </Card>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((product) => (
+            <Card key={product.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
+            <CardHeader className="p-0">
+                <div className="relative aspect-video">
+                    <Image 
+                        src={product.image} 
+                        alt={product.name} 
+                        fill 
+                        className="object-cover"
+                        data-ai-hint={product.hint}
+                    />
+                </div>
+            </CardHeader>
+            <CardContent className="p-4 flex-grow">
+                <div className="flex gap-2 mb-2">
+                    {product.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                </div>
+                <h3 className="text-lg font-semibold">{product.name}</h3>
+                <p className="text-muted-foreground mt-1">{product.price}</p>
+                <CardDescription className="mt-2 text-sm">{product.description}</CardDescription>
+            </CardContent>
+            <CardFooter className="p-4 mt-auto">
+                <Button className="w-full" onClick={() => handleAddToCart(product)}>
+                <ShoppingCart className="mr-2" />
+                Add to Cart
+                </Button>
+            </CardFooter>
+            </Card>
+        ))}
+        </div>
     </div>
   );
 }
