@@ -77,6 +77,15 @@ export default function DashboardLayout({
     return name.substring(0, 2);
   }
 
+  const getPageTitle = () => {
+    const currentItem = allMenuItems.find(item => pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== '/'));
+    if (currentItem) {
+      return currentItem.label;
+    }
+    if (pathname === '/dashboard') return translations.sidebar.dashboard;
+    return 'ArtVaani';
+  };
+
   return (
     <SidebarProvider>
       <Sidebar>
@@ -139,7 +148,7 @@ export default function DashboardLayout({
                 </Button>
             </SidebarTrigger>
             <div className="flex-1">
-                <h1 className="text-lg font-semibold">{allMenuItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard'}</h1>
+                <h1 className="text-lg font-semibold">{getPageTitle()}</h1>
             </div>
              {user && (
                  <DropdownMenu>
