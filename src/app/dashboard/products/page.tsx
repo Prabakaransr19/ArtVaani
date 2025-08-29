@@ -17,6 +17,7 @@ const products = [
     id: 'prod_1',
     name: 'Hand-Painted Terracotta Vase',
     price: '₹1,299',
+    raw_price: 1299,
     image: 'https://picsum.photos/600/400?random=1',
     hint: 'terracotta vase',
     tags: ['Handmade', 'Eco-friendly'],
@@ -26,6 +27,7 @@ const products = [
     id: 'prod_2',
     name: 'Madhubani Painting',
     price: '₹2,499',
+    raw_price: 2499,
     image: 'https://picsum.photos/600/400?random=2',
     hint: 'madhubani art',
     tags: ['Folk Art', 'Wall Decor'],
@@ -35,6 +37,7 @@ const products = [
     id: 'prod_3',
     name: 'Pashmina Shawl',
     price: '₹7,999',
+    raw_price: 7999,
     image: 'https://picsum.photos/600/400?random=3',
     hint: 'pashmina shawl',
     tags: ['Luxury', 'Fashion'],
@@ -44,6 +47,7 @@ const products = [
     id: 'prod_4',
     name: 'Wooden Elephant Figurine',
     price: '₹899',
+    raw_price: 899,
     image: 'https://picsum.photos/600/400?random=4',
     hint: 'wooden elephant',
     tags: ['Hand-carved', 'Decor'],
@@ -53,6 +57,7 @@ const products = [
     id: 'prod_5',
     name: 'Jaipuri Blue Pottery Plate',
     price: '₹1,599',
+    raw_price: 1599,
     image: 'https://picsum.photos/600/400?random=5',
     hint: 'blue pottery',
     tags: ['Ceramic', 'Decorative'],
@@ -62,6 +67,7 @@ const products = [
     id: 'prod_6',
     name: 'Kalamkari Fabric',
     price: '₹1,899',
+    raw_price: 1899,
     image: 'https://picsum.photos/600/400?random=6',
     hint: 'kalamkari fabric',
     tags: ['Textile', 'Natural Dyes'],
@@ -88,7 +94,7 @@ export default function ProductsPage() {
                 ...product,
                 quantity: 1,
                 addedAt: serverTimestamp(),
-              });
+              }, { merge: true }); // Use merge to avoid overwriting quantity if it already exists
               toast({
                   title: 'Added to Cart!',
                   description: `${product.name} has been added to your cart.`

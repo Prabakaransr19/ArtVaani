@@ -14,6 +14,7 @@ import {
   User as UserIcon,
   LogIn,
   ShoppingBag,
+  ShoppingCart,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -79,9 +80,11 @@ export default function DashboardLayout({
   };
 
   const allMenuItems = [
-    // Always visible
+    // Publicly visible
     { href: '/dashboard/products', label: translations.sidebar.products, icon: ShoppingBag, requiresAuth: false, requiresArtisan: false },
     { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false, requiresArtisan: false },
+    // Buyer + Artisan
+    { href: '/dashboard/cart', label: translations.sidebar.cart, icon: ShoppingCart, requiresAuth: true, requiresArtisan: false },
     // Artisan only
     { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true },
     { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true },
@@ -114,6 +117,8 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/add-product')) return translations.sidebar.addProduct;
     if (pathname.startsWith('/dashboard/story-creation')) return translations.sidebar.storyCreation;
     if (pathname.startsWith('/dashboard/discovery')) return translations.sidebar.discoverCrafts;
+    if (pathname.startsWith('/dashboard/cart')) return translations.sidebar.cart;
+    if (pathname.startsWith('/dashboard/checkout')) return translations.checkout.title;
     return 'ArtVaani';
   };
 

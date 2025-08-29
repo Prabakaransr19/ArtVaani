@@ -12,7 +12,8 @@
         "products": "Products",
         "addProduct": "Add Product",
         "storyCreation": "Story Creation",
-        "discoverCrafts": "Discover Crafts"
+        "discoverCrafts": "Discover Crafts",
+        "cart": "Cart"
     },
     "dashboard": {
         "welcome": "Welcome, Artisan!",
@@ -110,5 +111,17 @@
             "title": "Ready to Explore?",
             "description": "Enter a craft name above to begin your journey."
         }
+    },
+    "cart": {
+        "title": "Your Shopping Cart",
+        "empty": "Your cart is empty.",
+        "continueShopping": "Continue Shopping",
+        "total": "Total",
+        "checkout": "Proceed to Checkout"
+    },
+    "checkout": {
+        "title": "Checkout",
+        "dummyMessage": "This is a dummy checkout page for demonstration. No real transaction will be made.",
+        "backToShopping": "Back to Shopping"
     }
 }
