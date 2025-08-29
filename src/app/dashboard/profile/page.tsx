@@ -8,9 +8,10 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { useLanguage } from '@/context/language-context';
+import Image from 'next/image';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -19,6 +20,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, User, Package } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   displayName: z.string().min(3, 'Full name must be at least 3 characters.'),
@@ -30,6 +32,13 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+interface Product {
+    id: string;
+    name: string;
+    price: string;
+    image: string;
+}
+
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -39,6 +48,8 @@ export default function ProfilePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
+  const [myProducts, setMyProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
 
   const {
     register,
@@ -73,16 +84,30 @@ export default function ProfilePage() {
     fetchUserData();
   }, [user, authLoading, router, setValue]);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const productsQuery = query(collection(db, 'products'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+
+    const unsubscribe = onSnapshot(productsQuery, (snapshot) => {
+        const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+        setMyProducts(productsData);
+        setProductsLoading(false);
+    }, (error) => {
+        console.error("Error fetching user products:", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch your products.' });
+        setProductsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user, toast]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!user) return;
 
     setIsLoading(true);
     try {
-      // Update Firebase Auth profile
       await updateProfile(user, { displayName: data.displayName });
-
-      // Save additional details in Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         displayName: data.displayName,
@@ -175,9 +200,28 @@ export default function ProfilePage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="text-center text-muted-foreground py-8">
-                        <p>{t.myProducts.placeholder}</p>
-                    </div>
+                    {productsLoading ? (
+                        <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
+                    ) : myProducts.length > 0 ? (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {myProducts.map(product => (
+                                <div key={product.id} className="border rounded-lg overflow-hidden">
+                                    <div className="relative aspect-video">
+                                        <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                    </div>
+                                    <div className="p-3">
+                                        <h4 className="font-semibold truncate">{product.name}</h4>
+                                        <p className="text-sm text-muted-foreground">{product.price}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center text-muted-foreground py-8">
+                            <p>{t.myProducts.placeholder}</p>
+                             <Button onClick={() => router.push('/dashboard/add-product')} className="mt-4">Add your first product</Button>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </div>

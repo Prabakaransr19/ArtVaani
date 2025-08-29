@@ -1,12 +1,15 @@
 
 'use client';
 
-import { useState } from 'react';
-import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import Image from 'next/image';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
+import { db, auth } from '@/lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -16,15 +19,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { languages } from '@/lib/languages';
-import { Wand2, Loader2, Copy, Send, LogIn } from 'lucide-react';
+import { Wand2, Loader2, Copy, Send, LogIn, Upload, Mic, Square, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
-  productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
-  productDescription: z.string().min(10, 'Product description must be at least 10 characters long.'),
+  description: z.string().min(10, 'Please provide a description of at least 10 characters.'),
   targetAudience: z.string().min(3, 'Target audience must be at least 3 characters long.'),
   language: z.string(),
 });
@@ -34,204 +35,246 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
+  const [productImage, setProductImage] = useState<{ file: File, preview: string } | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const [step, setStep] = useState(1);
+
   const { toast } = useToast();
   const { language, translations } = useLanguage();
   const { user } = useAuth();
+  const router = useRouter();
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
     setValue,
     trigger,
+    formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { language: language },
+    defaultValues: { language: language, description: '', targetAudience: '' },
   });
 
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Required',
-        description: 'Please sign in to generate a listing.',
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setProductImage({ file, preview: URL.createObjectURL(file) });
+    }
+  };
+
+  const startRecording = async () => {
+    // Similar to story-creation page
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      mediaRecorderRef.current.addEventListener('dataavailable', (event) => audioChunksRef.current.push(event.data));
+      mediaRecorderRef.current.addEventListener('stop', () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setAudioBlob(blob);
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64Audio = reader.result as string;
+          // This part is simplified; in a real app, you'd use a speech-to-text API.
+          // For now, we'll just indicate that a recording was made.
+          setValue('description', '[Voice recording attached]');
+          toast({ title: 'Voice note recorded!' });
+        };
       });
+      mediaRecorderRef.current.start();
+      setIsRecording(true);
+    } catch (err) {
+      toast({ variant: 'destructive', title: 'Microphone access denied.' });
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+    }
+  };
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    if (!productImage) {
+      toast({ variant: 'destructive', title: 'Product image is required.' });
       return;
     }
     setIsLoading(true);
     setGeneratedListing(null);
-    try {
-      const result = await generateProductListing(data);
-      setGeneratedListing(result);
-    } catch (error) {
-      console.error('Error generating product listing:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Generation Failed',
-        description: 'Could not generate the product listing. Please try again.',
-      });
-    } finally {
-      setIsLoading(false);
+
+    const reader = new FileReader();
+    reader.readAsDataURL(productImage.file);
+    reader.onloadend = async () => {
+        const base64Image = reader.result as string;
+        try {
+            const result = await generateProductListing({
+              ...data,
+              photoDataUri: base64Image,
+            });
+            setGeneratedListing(result);
+            setStep(2); // Move to the editing step
+        } catch (error) {
+            console.error('Error generating product listing:', error);
+            toast({ variant: 'destructive', title: 'Generation Failed' });
+        } finally {
+            setIsLoading(false);
+        }
     }
   };
 
-  const handleCopyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast({
-      title: 'Copied to clipboard!',
-    });
+  const handlePostProduct = async () => {
+    if (!user || !generatedListing || !productImage) return;
+
+    setIsLoading(true);
+    try {
+        const productsCollection = collection(db, 'products');
+        await addDoc(productsCollection, {
+            name: generatedListing.title,
+            description: generatedListing.description,
+            story: generatedListing.story,
+            price: generatedListing.suggestedPrice,
+            hashtags: generatedListing.hashtags,
+            image: productImage.preview, // In a real app, upload to storage and save URL
+            userId: user.uid,
+            createdAt: serverTimestamp(),
+            language: language,
+        });
+        toast({ title: 'Product Posted!', description: 'Your product is now live.' });
+        router.push('/dashboard/products');
+    } catch (error) {
+        console.error("Error posting product: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not post product.' });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
-  const handlePostProduct = () => {
-    // This is already protected by the check below, so no need for another toast.
-    // This function will simply not be callable by a logged-out user.
-    toast({
-      title: 'Product Posted!',
-      description: 'Your product has been successfully posted.',
-    });
-  };
-  
   const t = translations.addProduct;
 
-  const generateButton = (
-    <Button type="submit" disabled={isLoading || !user} className="w-full">
-      {isLoading ? (
-        <Loader2 className="animate-spin" />
-      ) : (
-        <Wand2 className="mr-2" />
-      )}
-      {t.generator.button}
-    </Button>
-  );
+  if (!user) {
+    return (
+      <Alert>
+        <LogIn className="size-4" />
+        <AlertTitle>Sign in to continue</AlertTitle>
+        <AlertDescription>
+          Please <Link href="/auth" className="font-bold underline">sign in</Link> to add a product.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
-    <TooltipProvider>
-      <div className="grid gap-8 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t.generator.title}</CardTitle>
-            <CardDescription>{t.generator.description}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="productName">{t.generator.productName.label}</Label>
-                <Input id="productName" {...register('productName')} placeholder={t.generator.productName.placeholder} />
-                {errors.productName && <p className="text-sm text-destructive">{errors.productName.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="productDescription">{t.generator.productDescription.label}</Label>
-                <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={5} />
-                {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="targetAudience">{t.generator.targetAudience.label}</Label>
-                <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
-                {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="language">{t.generator.language.label}</Label>
-                <Select
-                  onValueChange={(value) => {
-                    setValue('language', value);
-                    trigger('language');
-                  }}
-                  defaultValue={language}
-                >
-                  <SelectTrigger id="language">
-                    <SelectValue placeholder={t.generator.language.placeholder} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map((lang) => (
-                      <SelectItem key={lang.value} value={lang.value}>
-                        {lang.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {!user ? (
-                  <Tooltip>
-                      <TooltipTrigger asChild className="w-full">
-                          {/* The button is wrapped in a span to allow the tooltip to work when the button is disabled */}
-                          <span tabIndex={0} className="inline-block w-full">{generateButton}</span>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                          <p>Please sign in to generate a product listing.</p>
-                      </TooltipContent>
-                  </Tooltip>
-              ) : (
-                  generateButton
-              )}
-            </form>
-          </CardContent>
-        </Card>
+    <div className="max-w-4xl mx-auto">
+        {step === 1 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t.generator.title}</CardTitle>
+                    <CardDescription>{t.generator.description}</CardDescription>
+                </CardHeader>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                    <CardContent className="space-y-6">
+                        {/* Step 1: Image Upload */}
+                        <div className="space-y-2">
+                            <Label htmlFor="productImage">1. Upload Product Image</Label>
+                            <Input id="productImage" type="file" accept="image/*" onChange={handleImageChange} className="file:text-primary file:font-semibold"/>
+                            {productImage && (
+                                <div className="mt-4 relative w-48 h-48 rounded-md overflow-hidden ring-2 ring-primary/50">
+                                    <Image src={productImage.preview} alt="Product preview" fill className="object-cover" />
+                                </div>
+                            )}
+                        </div>
+                        {/* Step 2: Description */}
+                        <div className="space-y-2">
+                           <Label htmlFor="productDescription">2. Describe Your Product (Text or Voice)</Label>
+                            <div className="flex gap-2">
+                                <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={3} className="flex-grow" />
+                                <Button type="button" variant={isRecording ? 'destructive' : 'outline'} size="icon" onClick={isRecording ? stopRecording : startRecording}>
+                                    {isRecording ? <Square/> : <Mic />}
+                                </Button>
+                            </div>
+                            {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
+                        </div>
 
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>{t.generated.title}</CardTitle>
-            <CardDescription>{t.generated.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 flex-1">
-            {isLoading && (
-              <div className="flex flex-col items-center justify-center h-full space-y-4">
-                <Loader2 className="size-12 animate-spin text-primary" />
-                <p className="text-muted-foreground">{t.generated.loading}</p>
-              </div>
-            )}
-            {generatedListing ? (
-              <>
-                <div className="space-y-2">
-                  <Label>{t.generated.generatedTitle}</Label>
-                  <div className="relative">
-                    <Input readOnly value={generatedListing.title} className="pr-10" />
-                    <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.title)}><Copy className="size-4"/></Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t.generated.generatedDescription}</Label>
-                  <div className="relative">
-                    <Textarea readOnly value={generatedListing.description} rows={8} className="pr-10" />
-                    <Button variant="ghost" size="icon" className="absolute top-2 right-1 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.description)}><Copy className="size-4"/></Button>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t.generated.generatedHashtags}</Label>
-                  <div className="relative">
-                    <Input readOnly value={generatedListing.hashtags} className="pr-10"/>
-                    <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.hashtags)}><Copy className="size-4"/></Button>
-                  </div>
-                </div>
-              </>
-            ) : (
-              !isLoading && (
-                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                  <Wand2 className="size-12 mb-4"/>
-                  <p>{t.generated.placeholder}</p>
-                </div>
-              )
-            )}
-          </CardContent>
-          {generatedListing && !isLoading && (
-              <CardFooter>
-                  {user ? (
-                      <Button onClick={handlePostProduct} className="w-full">
-                          <Send className="mr-2" />
-                          {t.generated.postButton}
-                      </Button>
-                  ) : (
-                      <Alert>
-                          <LogIn className="size-4" />
-                          <AlertTitle>Sign in to continue</AlertTitle>
-                          <AlertDescription>
-                              Please <Link href="/auth" className="font-bold underline">sign in</Link> to post your product.
-                          </AlertDescription>
-                      </Alert>
-                  )}
-              </CardFooter>
-          )}
-        </Card>
-      </div>
-    </TooltipProvider>
+                         {/* Step 3: Audience & Language */}
+                        <div className="grid md:grid-cols-2 gap-4">
+                             <div className="space-y-2">
+                                <Label htmlFor="targetAudience">3. Who is this for?</Label>
+                                <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
+                                {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="language">4. Language</Label>
+                                <Select onValueChange={(v) => setValue('language', v)} defaultValue={language}>
+                                <SelectTrigger id="language"><SelectValue /></SelectTrigger>
+                                <SelectContent>
+                                    {languages.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
+                                </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </CardContent>
+                    <CardFooter>
+                         <Button type="submit" disabled={isLoading || !productImage} className="w-full">
+                            {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" /> Generate Listing with AI</>}
+                        </Button>
+                    </CardFooter>
+                </form>
+            </Card>
+        )}
+
+        {step === 2 && generatedListing && (
+            <Card>
+                 <CardHeader>
+                    <CardTitle>Review & Refine Your Listing</CardTitle>
+                    <CardDescription>The AI has generated the content below. Edit it as you see fit, then post your product.</CardDescription>
+                </CardHeader>
+                 <CardContent className="space-y-6">
+                    <div className="flex gap-6 flex-col md:flex-row">
+                        {productImage && (
+                            <div className="relative w-full md:w-1/3 aspect-square rounded-md overflow-hidden">
+                                <Image src={productImage.preview} alt="Product" fill className="object-cover" />
+                            </div>
+                        )}
+                        <div className="flex-1 space-y-4">
+                            <div className="space-y-2">
+                                <Label>Title</Label>
+                                <Input value={generatedListing.title} onChange={(e) => setGeneratedListing({...generatedListing, title: e.target.value})} />
+                            </div>
+                             <div className="space-y-2">
+                                <Label>Suggested Price</Label>
+                                <Input value={generatedListing.suggestedPrice} onChange={(e) => setGeneratedListing({...generatedListing, suggestedPrice: e.target.value})} />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                        <Label>Description</Label>
+                        <Textarea value={generatedListing.description} rows={5} onChange={(e) => setGeneratedListing({...generatedListing, description: e.target.value})} />
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Story</Label>
+                        <Textarea value={generatedListing.story} rows={5} onChange={(e) => setGeneratedListing({...generatedListing, story: e.target.value})} />
+                    </div>
+                     <div className="space-y-2">
+                        <Label>Hashtags</Label>
+                        <Input value={generatedListing.hashtags} onChange={(e) => setGeneratedListing({...generatedListing, hashtags: e.target.value})} />
+                    </div>
+                 </CardContent>
+                 <CardFooter className="flex justify-between">
+                     <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
+                    <Button onClick={handlePostProduct} disabled={isLoading}>
+                         {isLoading ? <Loader2 className="animate-spin" /> : <><Send className="mr-2" /> Post Product</>}
+                    </Button>
+                 </CardFooter>
+            </Card>
+        )}
+    </div>
   );
 }
