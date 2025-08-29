@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {createCulturalNarrative} from './cultural-narrative-from-voice';
 
 const GenerateProductListingInputSchema = z.object({
   photoDataUri: z

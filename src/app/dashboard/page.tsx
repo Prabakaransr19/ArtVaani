@@ -65,12 +65,6 @@ export default function DashboardPage() {
             icon: <PackagePlus className="size-8 text-primary" />,
         },
         {
-            title: translations.dashboard.tools.storyCreation.title,
-            description: translations.dashboard.tools.storyCreation.description,
-            href: '/dashboard/story-creation',
-            icon: <Mic className="size-8 text-primary" />,
-        },
-        {
             title: translations.dashboard.tools.discoverCrafts.title,
             description: translations.dashboard.tools.discoverCrafts.description,
             href: '/dashboard/discovery',

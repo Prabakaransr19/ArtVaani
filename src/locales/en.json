@@ -11,7 +11,6 @@
         "dashboard": "Dashboard",
         "products": "Products",
         "addProduct": "Add Product",
-        "storyCreation": "Story Creation",
         "discoverCrafts": "Discover Crafts",
         "cart": "Cart",
         "forArtisans": "For Artisans",
@@ -25,10 +24,6 @@
             "productListing": {
                 "title": "AI Product Listing Tool",
                 "description": "Effortlessly create compelling product titles, descriptions, and hashtags for your crafts."
-            },
-            "storyCreation": {
-                "title": "AI Storytelling Tool",
-                "description": "Convert your spoken stories into engaging cultural narratives for your audience."
             },
             "discoverCrafts": {
                 "title": "Discover Crafts",
@@ -67,26 +62,6 @@
             "generatedHashtags": "Generated Hashtags",
             "placeholder": "Your generated content will appear here.",
             "postButton": "Post Product"
-        }
-    },
-    "storyCreation": {
-        "assistant": {
-            "title": "AI Storytelling Assistant",
-            "description": "Record your story, and our AI will craft a beautiful narrative.",
-            "step1": "Step 1: Select Language",
-            "languagePlaceholder": "Select language",
-            "step2": "Step 2: Record Your Story",
-            "startRecording": "Start Recording",
-            "stopRecording": "Stop Recording",
-            "yourRecording": "Your Recording",
-            "generateButton": "Generate Narrative"
-        },
-        "narrative": {
-            "title": "Generated Narrative",
-            "description": "Review the AI-generated narrative. You can listen to it being read out loud.",
-            "loading": "Crafting your story...",
-            "readAloud": "Read narrative aloud",
-            "placeholder": "Your generated story will appear here."
         }
     },
     "discover": {
