@@ -70,7 +70,7 @@ const products = [
     name: 'Kalamkari Fabric',
     price: '₹1,899',
     raw_price: 1899,
-    image: 'https://picsum.photos/600/400?random=6',
+    image: 'https://images.unsplash.com/photo-1749367288395-f874bb54bc8a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxLYWxhbWthcmklMjBGYWJyaWN8ZW58MHx8fHwxNzU2NDg3OTIzfDA&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'kalamkari fabric',
     tags: ['Textile', 'Natural Dyes'],
     description: 'Hand-printed Kalamkari fabric with intricate patterns using natural dyes. Ideal for custom apparel or home furnishings.'
