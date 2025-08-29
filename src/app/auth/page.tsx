@@ -12,7 +12,8 @@ import {
   signInWithPhoneNumber,
   ConfirmationResult,
 } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -50,12 +51,22 @@ export default function AuthPage() {
     }
   };
 
+  const handleSuccessfulSignIn = async (user: any) => {
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+    if (userDoc.exists()) {
+      router.push('/dashboard');
+    } else {
+      router.push('/auth/complete-profile');
+    }
+  };
+
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
+      const result = await signInWithPopup(auth, provider);
       toast({ title: 'Successfully signed in with Google.' });
-      router.push('/dashboard');
+      await handleSuccessfulSignIn(result.user);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Google Sign-In Error', description: error.message });
     }
@@ -63,9 +74,9 @@ export default function AuthPage() {
 
   const handleEmailSignUp = async () => {
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      const result = await createUserWithEmailAndPassword(auth, email, password);
       toast({ title: 'Account created successfully.' });
-      router.push('/dashboard');
+      await handleSuccessfulSignIn(result.user);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Sign-Up Error', description: error.message });
     }
@@ -73,9 +84,9 @@ export default function AuthPage() {
 
   const handleEmailSignIn = async () => {
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const result = await signInWithEmailAndPassword(auth, email, password);
       toast({ title: 'Successfully signed in.' });
-      router.push('/dashboard');
+      await handleSuccessfulSignIn(result.user);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Sign-In Error', description: error.message });
     }
@@ -98,9 +109,9 @@ export default function AuthPage() {
   const handleOtpVerify = async () => {
     if (!confirmationResult) return;
     try {
-      await confirmationResult.confirm(otp);
+      const result = await confirmationResult.confirm(otp);
       toast({ title: 'Successfully signed in with Phone.' });
-      router.push('/dashboard');
+      await handleSuccessfulSignIn(result.user);
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'OTP Verification Error', description: error.message });
     }

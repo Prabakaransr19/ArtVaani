@@ -9,10 +9,12 @@ import { ShoppingCart } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import { db } from '@/lib/firebase';
+import { doc, setDoc, collection, serverTimestamp } from 'firebase/firestore';
 
 const products = [
   {
-    id: 1,
+    id: 'prod_1',
     name: 'Hand-Painted Terracotta Vase',
     price: '₹1,299',
     image: 'https://picsum.photos/600/400?random=1',
@@ -21,7 +23,7 @@ const products = [
     description: 'A beautiful terracotta vase, hand-painted with traditional Indian motifs. Perfect for adding a rustic charm to your home decor.'
   },
   {
-    id: 2,
+    id: 'prod_2',
     name: 'Madhubani Painting',
     price: '₹2,499',
     image: 'https://picsum.photos/600/400?random=2',
@@ -30,7 +32,7 @@ const products = [
     description: 'An intricate Madhubani painting depicting scenes from Indian mythology. A vibrant and culturally rich addition to any wall.'
   },
   {
-    id: 3,
+    id: 'prod_3',
     name: 'Pashmina Shawl',
     price: '₹7,999',
     image: 'https://picsum.photos/600/400?random=3',
@@ -39,7 +41,7 @@ const products = [
     description: 'An exquisitely soft and warm Pashmina shawl, handwoven by artisans in Kashmir. A timeless piece of luxury.'
   },
   {
-    id: 4,
+    id: 'prod_4',
     name: 'Wooden Elephant Figurine',
     price: '₹899',
     image: 'https://picsum.photos/600/400?random=4',
@@ -48,7 +50,7 @@ const products = [
     description: 'A charming wooden elephant, hand-carved from a single block of wood. Symbolizes strength and good fortune.'
   },
   {
-    id: 5,
+    id: 'prod_5',
     name: 'Jaipuri Blue Pottery Plate',
     price: '₹1,599',
     image: 'https://picsum.photos/600/400?random=5',
@@ -57,7 +59,7 @@ const products = [
     description: 'A stunning decorative plate made using the famous Jaipuri blue pottery technique. Features a beautiful floral design.'
   },
   {
-    id: 6,
+    id: 'prod_6',
     name: 'Kalamkari Fabric',
     price: '₹1,899',
     image: 'https://picsum.photos/600/400?random=6',
@@ -72,7 +74,7 @@ export default function ProductsPage() {
     const router = useRouter();
     const { toast } = useToast();
 
-    const handleAddToCart = (productName: string) => {
+    const handleAddToCart = async (product: typeof products[0]) => {
         if (!user) {
             toast({
                 title: 'Please Sign In',
@@ -80,10 +82,25 @@ export default function ProductsPage() {
                 action: <Button onClick={() => router.push('/auth')}>Sign In</Button>
             });
         } else {
-            toast({
-                title: 'Added to Cart!',
-                description: `${productName} has been added to your cart.`
-            });
+            try {
+              const cartRef = doc(collection(db, 'users', user.uid, 'cart'), product.id);
+              await setDoc(cartRef, {
+                ...product,
+                quantity: 1,
+                addedAt: serverTimestamp(),
+              });
+              toast({
+                  title: 'Added to Cart!',
+                  description: `${product.name} has been added to your cart.`
+              });
+            } catch (error) {
+               console.error("Error adding to cart: ", error);
+               toast({
+                variant: 'destructive',
+                title: 'Error',
+                description: 'Could not add item to cart. Please try again.'
+               })
+            }
         }
     }
 
@@ -111,7 +128,7 @@ export default function ProductsPage() {
             <CardDescription className="mt-2 text-sm">{product.description}</CardDescription>
           </CardContent>
           <CardFooter className="p-4 mt-auto">
-            <Button className="w-full" onClick={() => handleAddToCart(product.name)}>
+            <Button className="w-full" onClick={() => handleAddToCart(product)}>
               <ShoppingCart className="mr-2" />
               Add to Cart
             </Button>
