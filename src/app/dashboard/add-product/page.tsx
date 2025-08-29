@@ -31,7 +31,7 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function ProductListingPage() {
+export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
   const { toast } = useToast();
@@ -91,7 +91,7 @@ export default function ProductListingPage() {
     });
   };
   
-  const t = translations.productListing;
+  const t = translations.addProduct;
 
   const generateButton = (
     <Button type="submit" disabled={isLoading || !user} className="w-full">

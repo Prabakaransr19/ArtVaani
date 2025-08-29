@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "แดชบอร์ด",
-        "productListing": "தயாரிப்பு பட்டியல்",
+        "products": "தயாரிப்புகள்",
+        "addProduct": "தயாரிப்பைச் சேர்",
         "storyCreation": "கதை உருவாக்கம்",
         "discoverCrafts": "கைவினைகளைக் கண்டறியவும்"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "AI பட்டியல் உருவாக்குபவர்",
             "description": "உங்கள் தயாரிப்பு விவரங்களை நிரப்பி, AI எழுதட்டும்.",

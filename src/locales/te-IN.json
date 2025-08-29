@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "డాష్‌బోర్డ్",
-        "productListing": "ఉత్పత్తి జాబితా",
+        "products": "ఉత్పత్తులు",
+        "addProduct": "ఉత్పత్తిని జోడించండి",
         "storyCreation": "కథ సృష్టి",
         "discoverCrafts": "చేతిపనులను కనుగొనండి"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "AI జాబితా జనరేటర్",
             "description": "మీ ఉత్పత్తి వివరాలను పూరించండి మరియు AI కి రాయడానికి అనుమతించండి.",

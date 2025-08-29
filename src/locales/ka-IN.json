@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್",
-        "productListing": "ಉತ್ಪನ್ನ ಪಟ್ಟಿ",
+        "products": "ಉತ್ಪನ್ನಗಳು",
+        "addProduct": "ಉತ್ಪನ್ನವನ್ನು ಸೇರಿಸಿ",
         "storyCreation": "ಕಥೆ ರಚನೆ",
         "discoverCrafts": "ಕರಕುಶಲ ವಸ್ತುಗಳನ್ನು ಅನ್ವೇಷಿಸಿ"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "AI ಪಟ್ಟಿ ಜನರೇಟರ್",
             "description": "ನಿಮ್ಮ ಉತ್ಪನ್ನದ ವಿವರಗಳನ್ನು ಭರ್ತಿ ಮಾಡಿ ಮತ್ತು AI ಬರೆಯಲಿ.",

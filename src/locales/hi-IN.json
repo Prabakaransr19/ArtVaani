@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "डैशबोर्ड",
-        "productListing": "उत्पाद सूची",
+        "products": "उत्पाद",
+        "addProduct": "उत्पाद जोड़ें",
         "storyCreation": "कहानी निर्माण",
         "discoverCrafts": "शिल्प खोजें"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "एआई लिस्टिंग जेनरेटर",
             "description": "अपने उत्पाद का विवरण भरें और एआई को लिखने दें।",

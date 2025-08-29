@@ -11,7 +11,8 @@ import {
   PanelLeft,
   LogOut,
   User as UserIcon,
-  LogIn
+  LogIn,
+  ShoppingBag,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -59,7 +60,8 @@ export default function DashboardLayout({
 
   const allMenuItems = [
     { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true },
-    { href: '/dashboard/product-listing', label: translations.sidebar.productListing, icon: PackagePlus, requiresAuth: false },
+    { href: '/dashboard/products', label: translations.sidebar.products, icon: ShoppingBag, requiresAuth: false },
+    { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true },
     { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true },
     { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false },
   ];
@@ -137,7 +139,7 @@ export default function DashboardLayout({
                 </Button>
             </SidebarTrigger>
             <div className="flex-1">
-                <h1 className="text-lg font-semibold">{allMenuItems.find(item => item.href === pathname)?.label || 'Dashboard'}</h1>
+                <h1 className="text-lg font-semibold">{allMenuItems.find(item => pathname.startsWith(item.href))?.label || 'Dashboard'}</h1>
             </div>
              {user && (
                  <DropdownMenu>

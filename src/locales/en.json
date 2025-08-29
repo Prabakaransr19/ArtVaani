@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "Dashboard",
-        "productListing": "Product Listing",
+        "products": "Products",
+        "addProduct": "Add Product",
         "storyCreation": "Story Creation",
         "discoverCrafts": "Discover Crafts"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "AI Listing Generator",
             "description": "Fill in your product details and let AI do the writing.",

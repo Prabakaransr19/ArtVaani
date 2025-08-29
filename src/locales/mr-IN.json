@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "डॅशबोर्ड",
-        "productListing": "उत्पादन सूची",
+        "products": "उत्पादने",
+        "addProduct": "उत्पादन जोडा",
         "storyCreation": "कथा निर्मिती",
         "discoverCrafts": "कलाकुसर शोधा"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "एआय सूची जनरेटर",
             "description": "तुमच्या उत्पादनाचे तपशील भरा आणि एआयला लिहू द्या.",

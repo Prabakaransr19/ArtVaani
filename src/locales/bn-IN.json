@@ -9,7 +9,8 @@
     },
     "sidebar": {
         "dashboard": "ড্যাশবোর্ড",
-        "productListing": "পণ্য তালিকা",
+        "products": "পণ্য",
+        "addProduct": "পণ্য যোগ করুন",
         "storyCreation": "গল্প তৈরি",
         "discoverCrafts": "শিল্পকর্ম আবিষ্কার করুন"
     },
@@ -32,7 +33,7 @@
             }
         }
     },
-    "productListing": {
+    "addProduct": {
         "generator": {
             "title": "এআই তালিকা জেনারেটর",
             "description": "আপনার পণ্যের বিবরণ পূরণ করুন এবং এআই-কে লিখতে দিন।",
