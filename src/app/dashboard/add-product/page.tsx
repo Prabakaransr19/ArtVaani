@@ -7,6 +7,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
+import Link from 'next/link';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
 import { db, auth } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
@@ -15,11 +16,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { languages } from '@/lib/languages';
-import { Wand2, Loader2, Copy, Send, LogIn, Upload, Mic, Square, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Wand2, Loader2, Send, LogIn, Upload, Mic, Square } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -27,7 +26,6 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 const formSchema = z.object({
   description: z.string().min(10, 'Please provide a description of at least 10 characters.'),
   targetAudience: z.string().min(3, 'Target audience must be at least 3 characters long.'),
-  language: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -52,11 +50,10 @@ export default function AddProductPage() {
     register,
     handleSubmit,
     setValue,
-    trigger,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { language: language, description: '', targetAudience: '' },
+    defaultValues: { description: '', targetAudience: '' },
   });
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +64,6 @@ export default function AddProductPage() {
   };
 
   const startRecording = async () => {
-    // Similar to story-creation page
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaRecorderRef.current = new MediaRecorder(stream);
@@ -80,8 +76,6 @@ export default function AddProductPage() {
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
           const base64Audio = reader.result as string;
-          // This part is simplified; in a real app, you'd use a speech-to-text API.
-          // For now, we'll just indicate that a recording was made.
           setValue('description', '[Voice recording attached]');
           toast({ title: 'Voice note recorded!' });
         };
@@ -116,6 +110,7 @@ export default function AddProductPage() {
         try {
             const result = await generateProductListing({
               ...data,
+              language: language,
               photoDataUri: base64Image,
             });
             setGeneratedListing(result);
@@ -180,7 +175,6 @@ export default function AddProductPage() {
                 </CardHeader>
                 <form onSubmit={handleSubmit(onSubmit)}>
                     <CardContent className="space-y-6">
-                        {/* Step 1: Image Upload */}
                         <div className="space-y-2">
                             <Label htmlFor="productImage">1. Upload Product Image</Label>
                             <Input id="productImage" type="file" accept="image/*" onChange={handleImageChange} className="file:text-primary file:font-semibold"/>
@@ -190,34 +184,22 @@ export default function AddProductPage() {
                                 </div>
                             )}
                         </div>
-                        {/* Step 2: Description */}
+                        
                         <div className="space-y-2">
                            <Label htmlFor="productDescription">2. Describe Your Product (Text or Voice)</Label>
                             <div className="flex gap-2">
-                                <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={3} className="flex-grow" />
+                                <Textarea id="productDescription" {...register('description')} placeholder={t.generator.productDescription.placeholder} rows={3} className="flex-grow" />
                                 <Button type="button" variant={isRecording ? 'destructive' : 'outline'} size="icon" onClick={isRecording ? stopRecording : startRecording}>
                                     {isRecording ? <Square/> : <Mic />}
                                 </Button>
                             </div>
-                            {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
+                            {errors.description && <p className="text-sm text-destructive">{errors.description.message}</p>}
                         </div>
 
-                         {/* Step 3: Audience & Language */}
-                        <div className="grid md:grid-cols-2 gap-4">
-                             <div className="space-y-2">
-                                <Label htmlFor="targetAudience">3. Who is this for?</Label>
-                                <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
-                                {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="language">4. Language</Label>
-                                <Select onValueChange={(v) => setValue('language', v)} defaultValue={language}>
-                                <SelectTrigger id="language"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                    {languages.map((l) => <SelectItem key={l.value} value={l.value}>{l.label}</SelectItem>)}
-                                </SelectContent>
-                                </Select>
-                            </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="targetAudience">3. Who is this for?</Label>
+                            <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
+                            {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
                         </div>
                     </CardContent>
                     <CardFooter>
