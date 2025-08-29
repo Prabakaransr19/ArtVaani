@@ -3,8 +3,7 @@
 
 import { createContext, useState, useEffect, ReactNode } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { auth } from '@/lib/firebase';
 import { Loader2 } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -24,13 +23,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const userDocRef = doc(db, 'users', user.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (!userDoc.exists() && pathname !== '/auth/complete-profile') {
-            // New user, redirect to complete profile
+        setUser(user);
+        // After signing in, if the user doesn't have a display name and is not already
+        // on the complete profile page, redirect them. This is a good indicator of a new user.
+        if (!user.displayName && pathname !== '/auth/complete-profile') {
             router.push('/auth/complete-profile');
-        } else {
-            setUser(user);
         }
       } else {
         setUser(null);
@@ -39,7 +36,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => unsubscribe();
-  }, [router, pathname]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (loading) {
     return (

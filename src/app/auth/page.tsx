@@ -13,7 +13,7 @@ import {
   ConfirmationResult,
 } from 'firebase/auth';
 import { auth, db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -41,7 +41,8 @@ export default function AuthPage() {
   const { toast } = useToast();
 
   const setupRecaptcha = () => {
-    if (!window.recaptchaVerifier) {
+    // This function may not be necessary if you configure reCAPTCHA v2 in Firebase Console
+    if (typeof window !== 'undefined' && !window.recaptchaVerifier) {
       window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
         size: 'invisible',
         callback: (response: any) => {
@@ -54,9 +55,18 @@ export default function AuthPage() {
   const handleSuccessfulSignIn = async (user: any) => {
     const userDocRef = doc(db, 'users', user.uid);
     const userDoc = await getDoc(userDocRef);
+
     if (userDoc.exists()) {
       router.push('/dashboard');
     } else {
+      // For Google Sign-in, we might get name/email, let's pre-populate firestore
+      if (user.providerData.some((p: any) => p.providerId === 'google.com')) {
+          await setDoc(userDocRef, {
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+          }, { merge: true });
+      }
       router.push('/auth/complete-profile');
     }
   };
@@ -76,7 +86,8 @@ export default function AuthPage() {
     try {
       const result = await createUserWithEmailAndPassword(auth, email, password);
       toast({ title: 'Account created successfully.' });
-      await handleSuccessfulSignIn(result.user);
+      // Don't check for doc, just go to complete profile.
+      router.push('/auth/complete-profile');
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Sign-Up Error', description: error.message });
     }
