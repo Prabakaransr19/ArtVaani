@@ -108,6 +108,13 @@
             "button": "विक्रेता बनें"
         }
     },
+     "productDetail": {
+        "description": "विवरण",
+        "story": "कहानी",
+        "addToCart": "कार्ट में डालें",
+        "relatedProducts": "संबंधित उत्पाद",
+        "noRelatedProducts": "कोई संबंधित उत्पाद नहीं मिला।"
+    },
     "forArtisans": {
         "title": "एक कारीगर बनें",
         "description": "शुरू करने के लिए हमें अपने और अपने शिल्प के बारे में थोड़ा और बताएं।",

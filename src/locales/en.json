@@ -108,6 +108,13 @@
             "button": "Become a Seller"
         }
     },
+    "productDetail": {
+        "description": "Description",
+        "story": "Story",
+        "addToCart": "Add to Cart",
+        "relatedProducts": "Related Products",
+        "noRelatedProducts": "No related products found."
+    },
     "forArtisans": {
         "title": "Become an Artisan",
         "description": "Tell us a bit more about you and your craft to get started.",

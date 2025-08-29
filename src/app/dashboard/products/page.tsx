@@ -2,23 +2,26 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Palette, Loader2 } from 'lucide-react';
+import { Palette, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { doc, setDoc, collection, serverTimestamp, getDoc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 
-interface Product {
+export interface Product {
     id: string;
     name: string;
     description: string;
+    story: string;
     price: string;
+    raw_price: number;
     image: string;
     hashtags: string;
     userId: string;
@@ -63,42 +66,6 @@ export default function ProductsPage() {
         checkUserRole();
     }, [user]);
 
-    const handleAddToCart = async (product: Product) => {
-        if (!user) {
-            toast({
-                title: 'Please Sign In',
-                description: 'You need to be logged in to add items to the cart.',
-                action: <Button onClick={() => router.push('/auth')}>Sign In</Button>
-            });
-        } else {
-            try {
-              const cartRef = doc(collection(db, 'users', user.uid, 'cart'), product.id);
-              // A bit of a hack for raw_price, but works for demo
-              const raw_price = parseFloat(product.price.replace(/[^0-9.-]+/g,""));
-              await setDoc(cartRef, {
-                id: product.id,
-                name: product.name,
-                price: product.price,
-                raw_price: isNaN(raw_price) ? 0 : raw_price,
-                image: product.image,
-                quantity: 1,
-                addedAt: serverTimestamp(),
-              }, { merge: true });
-              toast({
-                  title: 'Added to Cart!',
-                  description: `${product.name} has been added to your cart.`
-              });
-            } catch (error) {
-               console.error("Error adding to cart: ", error);
-               toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Could not add item to cart. Please try again.'
-               })
-            }
-        }
-    }
-
   if (loading) {
     return (
         <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
@@ -133,33 +100,33 @@ export default function ProductsPage() {
         ) : (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
-                    <Card key={product.id} className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                    <CardHeader className="p-0">
-                        <div className="relative aspect-video">
-                            <Image 
-                                src={product.image} 
-                                alt={product.name} 
-                                fill 
-                                className="object-cover"
-                                unoptimized // If using Firebase Storage, you might not need Next.js optimization
-                            />
-                        </div>
-                    </CardHeader>
-                    <CardContent className="p-4 flex-grow">
-                        <div className="flex gap-2 mb-2 flex-wrap">
-                            {product.hashtags.split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
-                        </div>
-                        <h3 className="text-lg font-semibold">{product.name}</h3>
-                        <p className="text-muted-foreground mt-1">{product.price}</p>
-                        <CardDescription className="mt-2 text-sm">{product.description}</CardDescription>
-                    </CardContent>
-                    <CardFooter className="p-4 mt-auto">
-                        <Button className="w-full" onClick={() => handleAddToCart(product)}>
-                        <ShoppingCart className="mr-2" />
-                        Add to Cart
-                        </Button>
-                    </CardFooter>
-                    </Card>
+                    <Link key={product.id} href={`/dashboard/products/${product.id}`} className="flex">
+                        <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 w-full">
+                        <CardHeader className="p-0">
+                            <div className="relative aspect-video">
+                                <Image 
+                                    src={product.image} 
+                                    alt={product.name} 
+                                    fill 
+                                    className="object-cover"
+                                />
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-4 flex-grow">
+                            <div className="flex gap-2 mb-2 flex-wrap">
+                                {product.hashtags.split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
+                            </div>
+                            <h3 className="text-lg font-semibold">{product.name}</h3>
+                            <p className="text-muted-foreground mt-1">{product.price}</p>
+                            <CardDescription className="mt-2 text-sm line-clamp-2">{product.description}</CardDescription>
+                        </CardContent>
+                        <CardFooter className="p-4 mt-auto">
+                           <Button className="w-full" variant="outline">
+                             View Details
+                           </Button>
+                        </CardFooter>
+                        </Card>
+                    </Link>
                 ))}
             </div>
         )}

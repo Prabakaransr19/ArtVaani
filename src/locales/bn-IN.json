@@ -60,7 +60,7 @@
             "generatedTitle": "উত্পন্ন শিরোনাম",
             "generatedDescription": "উত্পন্ন বিবরণ",
             "generatedHashtags": "উত্পন্ন হ্যাশট্যাগ",
-            "placeholder": "আপনার উৎপন্ন সামগ্রী এখানে প্রদর্শিত হবে।",
+            "placeholder": "আপনার উৎপন্ন সামগ্রী 여기 প্রদর্শিত হবে।",
             "postButton": "পণ্য পোস্ট করুন"
         }
     },
@@ -107,6 +107,13 @@
             "description": "আমাদের শিল্পী সম্প্রদায়ে যোগ দিন এবং আপনার কাজ বিশ্বের সামনে তুলে ধরুন।",
             "button": "বিক্রেতা হন"
         }
+    },
+     "productDetail": {
+        "description": "বিবরণ",
+        "story": "গল্প",
+        "addToCart": "কার্টে যোগ করুন",
+        "relatedProducts": "সম্পর্কিত পণ্য",
+        "noRelatedProducts": "সম্পর্কিত কোনো পণ্য পাওয়া যায়নি।"
     },
     "forArtisans": {
         "title": "শিল্পী হন",
