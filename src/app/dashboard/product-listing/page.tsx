@@ -20,6 +20,7 @@ import { Wand2, Loader2, Copy, Send, LogIn } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -49,6 +50,14 @@ export default function ProductListingPage() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    if (!user) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Required',
+        description: 'Please sign in to generate a listing.',
+      });
+      return;
+    }
     setIsLoading(true);
     setGeneratedListing(null);
     try {
@@ -74,15 +83,8 @@ export default function ProductListingPage() {
   };
 
   const handlePostProduct = () => {
-    if (!user) {
-         toast({
-            variant: 'destructive',
-            title: 'Authentication Required',
-            description: 'Please sign in to post a product.',
-        });
-        return;
-    }
-    // Placeholder for actual product posting logic
+    // This is already protected by the check below, so no need for another toast.
+    // This function will simply not be callable by a logged-out user.
     toast({
       title: 'Product Posted!',
       description: 'Your product has been successfully posted.',
@@ -90,6 +92,17 @@ export default function ProductListingPage() {
   };
   
   const t = translations.productListing;
+
+  const generateButton = (
+    <Button type="submit" disabled={isLoading || !user} className="w-full">
+      {isLoading ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <Wand2 className="mr-2" />
+      )}
+      {t.generator.button}
+    </Button>
+  );
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
@@ -136,14 +149,18 @@ export default function ProductListingPage() {
                 </SelectContent>
               </Select>
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full">
-              {isLoading ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Wand2 className="mr-2" />
-              )}
-              {t.generator.button}
-            </Button>
+            {!user ? (
+                <Tooltip>
+                    <TooltipTrigger asChild className="w-full">
+                        {generateButton}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Please sign in to generate a product listing.</p>
+                    </TooltipContent>
+                </Tooltip>
+            ) : (
+                generateButton
+            )}
           </form>
         </CardContent>
       </Card>
