@@ -18,7 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Package } from 'lucide-react';
+import { Loader2, User, Package, Mail } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 
@@ -55,10 +55,20 @@ export default function ProfilePage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
   });
+  
+  const displayName = watch('displayName');
+  
+  const handleRequestCityChange = () => {
+    const subject = `Request to Change City for ${displayName || 'User'}`;
+    const body = `Hi Team,\n\nPlease update my city.\n\nUser ID: ${user?.uid}\nUser Name: ${displayName}\n\nThank you,`;
+    window.location.href = `mailto:theteamvantablack@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  }
+
 
   useEffect(() => {
     if (authLoading) return;
@@ -111,7 +121,7 @@ export default function ProfilePage() {
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(userDocRef, {
         displayName: data.displayName,
-        city: data.city,
+        // city is no longer updated from here
         phoneNumber: data.phoneNumber,
         artType: data.artType,
         experience: data.experience,
@@ -155,10 +165,15 @@ export default function ProfilePage() {
                             <Input id="displayName" {...register('displayName')} />
                             {errors.displayName && <p className="text-sm text-destructive">{errors.displayName.message}</p>}
                         </div>
-                        <div className="space-y-2">
+                         <div className="space-y-2">
                             <Label htmlFor="city">{t.form.city.label}</Label>
-                            <Input id="city" {...register('city')} />
-                            {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
+                            <div className="flex gap-2">
+                                <Input id="city" {...register('city')} readOnly className="bg-muted/50 cursor-not-allowed"/>
+                                <Button type="button" variant="outline" onClick={handleRequestCityChange}>
+                                   <Mail className="mr-2"/> Request Change
+                                </Button>
+                            </div>
+                             {errors.city && <p className="text-sm text-destructive">{errors.city.message}</p>}
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -228,3 +243,5 @@ export default function ProfilePage() {
     </main>
   );
 }
+
+    
