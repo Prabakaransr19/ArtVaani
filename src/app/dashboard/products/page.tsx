@@ -50,7 +50,7 @@ const products = [
     name: 'Wooden Elephant Figurine',
     price: '₹899',
     raw_price: 899,
-    image: 'https://picsum.photos/600/400?random=4',
+    image: 'https://images.unsplash.com/photo-1739281468053-85e16eed5e8d?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxXb29kZW4lMjBFbGVwaGFudCUyMEZpZ3VyaW5lfGVufDB8fHx8MTc1NjQ4NzgwOHww&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'wooden elephant',
     tags: ['Hand-carved', 'Decor'],
     description: 'A charming wooden elephant, hand-carved from a single block of wood. Symbolizes strength and good fortune.'
