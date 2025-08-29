@@ -20,7 +20,7 @@ const products = [
     name: 'Hand-Painted Terracotta Vase',
     price: '₹1,299',
     raw_price: 1299,
-    image: 'https://picsum.photos/600/400?random=1',
+    image: 'https://images.unsplash.com/photo-1677700064585-951e35e5e475?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxIYW5kLVBhaW50ZWQlMjBUZXJyYWNvdHRhJTIwVmFzZSUyMHxlbnwwfHx8fDE3NTY0ODc0NTF8MA&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'terracotta vase',
     tags: ['Handmade', 'Eco-friendly'],
     description: 'A beautiful terracotta vase, hand-painted with traditional Indian motifs. Perfect for adding a rustic charm to your home decor.'
