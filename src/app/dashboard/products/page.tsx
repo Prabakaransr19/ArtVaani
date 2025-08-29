@@ -30,7 +30,7 @@ const products = [
     name: 'Madhubani Painting',
     price: '₹2,499',
     raw_price: 2499,
-    image: 'https://picsum.photos/600/400?random=2',
+    image: 'https://images.unsplash.com/photo-1714249158162-02f2f5fe1ae9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxNYWRodWJhbmklMjBQYWludGluZ3xlbnwwfHx8fDE3NTY0ODc1NjB8MA&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'madhubani art',
     tags: ['Folk Art', 'Wall Decor'],
     description: 'An intricate Madhubani painting depicting scenes from Indian mythology. A vibrant and culturally rich addition to any wall.'
