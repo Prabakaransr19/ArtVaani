@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,8 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { languages } from '@/lib/languages';
-import { Wand2, Loader2, Copy, Send } from 'lucide-react';
+import { Wand2, Loader2, Copy, Send, LogIn } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useAuth } from '@/hooks/use-auth';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const formSchema = z.object({
   productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -32,6 +35,7 @@ export default function ProductListingPage() {
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
   const { toast } = useToast();
   const { language, translations } = useLanguage();
+  const { user } = useAuth();
 
   const {
     register,
@@ -70,6 +74,14 @@ export default function ProductListingPage() {
   };
 
   const handlePostProduct = () => {
+    if (!user) {
+         toast({
+            variant: 'destructive',
+            title: 'Authentication Required',
+            description: 'Please sign in to post a product.',
+        });
+        return;
+    }
     // Placeholder for actual product posting logic
     toast({
       title: 'Product Posted!',
@@ -183,10 +195,20 @@ export default function ProductListingPage() {
         </CardContent>
         {generatedListing && !isLoading && (
             <CardFooter>
-                <Button onClick={handlePostProduct} className="w-full">
-                    <Send className="mr-2" />
-                    {t.generated.postButton}
-                </Button>
+                {user ? (
+                    <Button onClick={handlePostProduct} className="w-full">
+                        <Send className="mr-2" />
+                        {t.generated.postButton}
+                    </Button>
+                ) : (
+                    <Alert>
+                        <LogIn className="size-4" />
+                        <AlertTitle>Sign in to continue</AlertTitle>
+                        <AlertDescription>
+                            Please <Link href="/auth" className="font-bold underline">sign in</Link> to post your product.
+                        </AlertDescription>
+                    </Alert>
+                )}
             </CardFooter>
         )}
       </Card>

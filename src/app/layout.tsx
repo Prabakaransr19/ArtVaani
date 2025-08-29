@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { LanguageProvider } from '@/context/language-context';
+import { AuthProvider } from '@/context/auth-context';
 
 export const metadata: Metadata = {
   title: 'ArtVaani',
@@ -29,10 +30,12 @@ export default function RootLayout({
         />
       </head>
       <body className="font-body antialiased">
-        <LanguageProvider>
-            {children}
-            <Toaster />
-        </LanguageProvider>
+        <AuthProvider>
+            <LanguageProvider>
+                {children}
+                <Toaster />
+            </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   );
