@@ -151,7 +151,7 @@ export default function ProductDetailPage() {
                             <p className="text-muted-foreground">{product.story}</p>
                         </div>
                          <div className="flex gap-2 pt-2 flex-wrap">
-                            {product.hashtags.split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
+                            {(product.hashtags || '').split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
                         </div>
                     </div>
 
