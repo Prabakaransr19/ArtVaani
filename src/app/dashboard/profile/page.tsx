@@ -18,16 +18,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Package, Mail } from 'lucide-react';
+import { Loader2, User, Package, Mail, ShieldCheck, ShieldAlert } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
   displayName: z.string().min(3, 'Full name must be at least 3 characters.'),
   city: z.string().min(2, 'City is required.'),
   phoneNumber: z.string().min(10, 'Please enter a valid phone number.'),
-  artType: z.string().min(3, 'Please describe your art.'),
-  experience: z.string().min(1, 'Please enter your years of experience.'),
+  artType: z.string().optional(),
+  experience: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -37,6 +38,16 @@ interface Product {
     name: string;
     price: string;
     image: string;
+}
+
+interface UserProfile {
+    displayName: string;
+    city: string;
+    phoneNumber: string;
+    artType?: string;
+    experience?: string;
+    isArtisan?: boolean;
+    verificationStatus?: 'verified' | 'pending' | 'flagged' | 'unverified';
 }
 
 export default function ProfilePage() {
@@ -50,6 +61,7 @@ export default function ProfilePage() {
   const [isPageLoading, setIsPageLoading] = useState(true);
   const [myProducts, setMyProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(true);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const {
     register,
@@ -81,12 +93,15 @@ export default function ProfilePage() {
         const userDocRef = doc(db, 'users', user.uid);
         const userDoc = await getDoc(userDocRef);
         if (userDoc.exists()) {
-            const data = userDoc.data();
+            const data = userDoc.data() as UserProfile;
+            setUserProfile(data);
             setValue('displayName', data.displayName || '');
             setValue('city', data.city || '');
             setValue('phoneNumber', data.phoneNumber || '');
-            setValue('artType', data.artType || '');
-            setValue('experience', data.experience || '');
+            if(data.isArtisan) {
+              setValue('artType', data.artType || '');
+              setValue('experience', data.experience || '');
+            }
         }
         setIsPageLoading(false);
     }
@@ -95,7 +110,10 @@ export default function ProfilePage() {
   }, [user, authLoading, router, setValue]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || !userProfile?.isArtisan) {
+        setProductsLoading(false);
+        return;
+    };
 
     const productsQuery = query(collection(db, 'products'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
 
@@ -110,7 +128,7 @@ export default function ProfilePage() {
     });
 
     return () => unsubscribe();
-  }, [user, toast]);
+  }, [user, toast, userProfile?.isArtisan]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     if (!user) return;
@@ -119,13 +137,18 @@ export default function ProfilePage() {
     try {
       await updateProfile(user, { displayName: data.displayName });
       const userDocRef = doc(db, 'users', user.uid);
-      await setDoc(userDocRef, {
+      
+      const dataToUpdate: Partial<UserProfile> = {
         displayName: data.displayName,
-        // city is no longer updated from here
         phoneNumber: data.phoneNumber,
-        artType: data.artType,
-        experience: data.experience,
-      }, { merge: true });
+      }
+
+      if(userProfile?.isArtisan) {
+        dataToUpdate.artType = data.artType;
+        dataToUpdate.experience = data.experience;
+      }
+      
+      await setDoc(userDocRef, dataToUpdate, { merge: true });
 
       toast({ title: t.success.title, description: t.success.description });
     } catch (error: any) {
@@ -135,6 +158,22 @@ export default function ProfilePage() {
       setIsLoading(false);
     }
   };
+  
+  const getVerificationBadge = () => {
+    if (!userProfile?.isArtisan) return null;
+    
+    switch(userProfile.verificationStatus) {
+      case 'verified':
+        return <Badge variant="default" className="bg-green-500 hover:bg-green-600"><ShieldCheck className="mr-2" /> Verified Artisan</Badge>;
+      case 'flagged':
+        return <Badge variant="destructive"><ShieldAlert className="mr-2" /> Verification Flagged</Badge>;
+      case 'pending':
+        return <Badge variant="secondary"><ShieldAlert className="mr-2" /> Verification Pending</Badge>;
+      default:
+        return <Badge variant="secondary"><ShieldAlert className="mr-2" /> Unverified</Badge>;
+    }
+  }
+
 
   if (isPageLoading || authLoading) {
     return (
@@ -147,12 +186,23 @@ export default function ProfilePage() {
   return (
     <main className="flex justify-center">
         <div className="w-full max-w-4xl space-y-8">
+            {userProfile?.isArtisan && userProfile?.verificationStatus !== 'verified' && (
+              <Alert>
+                <ShieldAlert className="h-4 w-4" />
+                <AlertTitle>Verification Required</AlertTitle>
+                <AlertDescription>
+                  You must verify your identity to post products. 
+                  <Button variant="link" onClick={() => router.push('/dashboard/verify')} className="p-1">Click here to start.</Button>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Card>
                 <CardHeader>
                     <div className="flex items-center gap-4">
                         <User className="size-8 text-primary" />
                         <div>
-                            <CardTitle>{t.title}</CardTitle>
+                            <CardTitle className="flex items-center gap-4">{t.title} {getVerificationBadge()}</CardTitle>
                             <CardDescription>{t.description}</CardDescription>
                         </div>
                     </div>
@@ -177,22 +227,24 @@ export default function ProfilePage() {
                         </div>
                     </div>
                     <div className="space-y-2">
-                    <Label htmlFor="phoneNumber">{t.form.phoneNumber.label}</Label>
-                    <Input id="phoneNumber" type="tel" {...register('phoneNumber')} />
-                    {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
+                      <Label htmlFor="phoneNumber">{t.form.phoneNumber.label}</Label>
+                      <Input id="phoneNumber" type="tel" {...register('phoneNumber')} />
+                      {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
                     </div>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="artType">{t.form.artType.label}</Label>
-                            <Input id="artType" {...register('artType')} />
-                            {errors.artType && <p className="text-sm text-destructive">{errors.artType.message}</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="experience">{t.form.experience.label}</Label>
-                            <Input id="experience" {...register('experience')} />
-                            {errors.experience && <p className="text-sm text-destructive">{errors.experience.message}</p>}
-                        </div>
-                    </div>
+                    {userProfile?.isArtisan && (
+                      <div className="grid md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                              <Label htmlFor="artType">{t.form.artType.label}</Label>
+                              <Input id="artType" {...register('artType')} />
+                              {errors.artType && <p className="text-sm text-destructive">{errors.artType.message}</p>}
+                          </div>
+                          <div className="space-y-2">
+                              <Label htmlFor="experience">{t.form.experience.label}</Label>
+                              <Input id="experience" {...register('experience')} />
+                              {errors.experience && <p className="text-sm text-destructive">{errors.experience.message}</p>}
+                          </div>
+                      </div>
+                    )}
                 </CardContent>
                 <CardFooter>
                     <Button type="submit" disabled={isLoading}>
@@ -202,43 +254,47 @@ export default function ProfilePage() {
                 </form>
             </Card>
 
-            <Separator />
-            
-            <Card>
-                <CardHeader>
-                    <div className="flex items-center gap-4">
-                        <Package className="size-8 text-primary" />
-                        <div>
-                            <CardTitle>{t.myProducts.title}</CardTitle>
-                            <CardDescription>{t.myProducts.description}</CardDescription>
+            {userProfile?.isArtisan && (
+              <>
+                <Separator />
+                
+                <Card>
+                    <CardHeader>
+                        <div className="flex items-center gap-4">
+                            <Package className="size-8 text-primary" />
+                            <div>
+                                <CardTitle>{t.myProducts.title}</CardTitle>
+                                <CardDescription>{t.myProducts.description}</CardDescription>
+                            </div>
                         </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    {productsLoading ? (
-                        <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
-                    ) : myProducts.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {myProducts.map(product => (
-                                <div key={product.id} className="border rounded-lg overflow-hidden">
-                                    <div className="relative aspect-video">
-                                        <Image src={product.image} alt={product.name} fill className="object-cover" />
+                    </CardHeader>
+                    <CardContent>
+                        {productsLoading ? (
+                            <div className="flex justify-center"><Loader2 className="animate-spin"/></div>
+                        ) : myProducts.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {myProducts.map(product => (
+                                    <div key={product.id} className="border rounded-lg overflow-hidden">
+                                        <div className="relative aspect-video">
+                                            <Image src={product.image} alt={product.name} fill className="object-cover" />
+                                        </div>
+                                        <div className="p-3">
+                                            <h4 className="font-semibold truncate">{product.name}</h4>
+                                            <p className="text-sm text-muted-foreground">{product.price}</p>
+                                        </div>
                                     </div>
-                                    <div className="p-3">
-                                        <h4 className="font-semibold truncate">{product.name}</h4>
-                                        <p className="text-sm text-muted-foreground">{product.price}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center text-muted-foreground py-8">
-                            <p>{t.myProducts.placeholder}</p>
-                             <Button onClick={() => router.push('/dashboard/add-product')} className="mt-4">Add your first product</Button>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center text-muted-foreground py-8">
+                                <p>{t.myProducts.placeholder}</p>
+                                <Button onClick={() => router.push('/dashboard/add-product')} className="mt-4">Add your first product</Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+              </>
+            )}
         </div>
     </main>
   );

@@ -14,7 +14,8 @@
         "discoverCrafts": "Discover Crafts",
         "cart": "Cart",
         "forArtisans": "For Artisans",
-        "profile": "Profile"
+        "profile": "Profile",
+        "verify": "Verify Identity"
     },
     "dashboard": {
         "welcome": "Welcome, Artisan!",
@@ -139,7 +140,7 @@
     },
     "profile": {
         "title": "My Profile",
-        "description": "View and edit your artisan details.",
+        "description": "View and edit your details.",
         "form": {
             "displayName": { "label": "Full Name" },
             "city": { "label": "City" },
@@ -155,7 +156,9 @@
         "myProducts": {
             "title": "My Products",
             "description": "The products you have listed for sale.",
-            "placeholder": "You haven't listed any products yet. This feature is coming soon!"
+            "placeholder": "You haven't listed any products yet. Verify your identity to start selling."
         }
     }
 }
+
+    

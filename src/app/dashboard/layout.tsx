@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   ShoppingCart,
   Palette,
+  ShieldCheck,
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -57,19 +58,30 @@ export default function DashboardLayout({
   const { translations } = useLanguage();
   const { user } = useAuth();
   const [isArtisan, setIsArtisan] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
     const checkUserRole = async () => {
         if (user) {
             const userDocRef = doc(db, 'users', user.uid);
             const userDoc = await getDoc(userDocRef);
-            if (userDoc.exists() && userDoc.data().isArtisan) {
-                setIsArtisan(true);
-            } else {
-                setIsArtisan(false);
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                if (data.isArtisan) {
+                    setIsArtisan(true);
+                    if (data.verificationStatus === 'verified') {
+                        setIsVerified(true);
+                    } else {
+                        setIsVerified(false);
+                    }
+                } else {
+                    setIsArtisan(false);
+                    setIsVerified(false);
+                }
             }
         } else {
             setIsArtisan(false);
+            setIsVerified(false);
         }
     };
     checkUserRole();
@@ -86,16 +98,24 @@ export default function DashboardLayout({
     { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false, requiresArtisan: false },
     // Buyer + Artisan
     { href: '/dashboard/cart', label: translations.sidebar.cart, icon: ShoppingCart, requiresAuth: true, requiresArtisan: false },
+    { href: '/dashboard/profile', label: translations.sidebar.profile, icon: UserIcon, requiresAuth: true, requiresArtisan: false },
     { href: '/dashboard/for-artisans', label: translations.sidebar.forArtisans, icon: Palette, requiresAuth: true, requiresArtisan: 'not-artisan' },
     // Artisan only
-    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true },
-    { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true },
-    { href: '/dashboard/profile', label: translations.sidebar.profile, icon: UserIcon, requiresAuth: true, requiresArtisan: true },
+    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true, requiresVerified: true },
+    { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true, requiresVerified: true },
+    { href: '/dashboard/verify', label: translations.sidebar.verify, icon: ShieldCheck, requiresAuth: true, requiresArtisan: true, requiresVerified: 'not-verified' },
+
   ];
 
   const menuItems = allMenuItems.filter(item => {
     if(item.requiresArtisan === 'not-artisan') {
       return user && !isArtisan;
+    }
+     if (item.requiresVerified === 'not-verified') {
+        return user && isArtisan && !isVerified;
+    }
+    if (item.requiresVerified) {
+        return user && isArtisan && isVerified;
     }
     if (item.requiresArtisan) {
         return user && isArtisan;
@@ -125,6 +145,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/checkout')) return translations.checkout.title;
     if (pathname.startsWith('/dashboard/for-artisans')) return translations.sidebar.forArtisans;
     if (pathname.startsWith('/dashboard/profile')) return translations.sidebar.profile;
+    if (pathname.startsWith('/dashboard/verify')) return translations.sidebar.verify;
     return 'ArtVaani';
   };
 
@@ -232,3 +253,5 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+
+    

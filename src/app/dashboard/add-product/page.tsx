@@ -10,7 +10,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
 import { db, storage } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Wand2, Loader2, Send, LogIn, Upload, Mic, Square } from 'lucide-react';
+import { Wand2, Loader2, Send, LogIn, Upload, Mic, Square, ShieldAlert } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -39,6 +39,8 @@ export default function AddProductPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [step, setStep] = useState(1);
+  const [isVerified, setIsVerified] = useState(false);
+  const [isVerificationLoading, setIsVerificationLoading] = useState(true);
 
   const { toast } = useToast();
   const { language, translations } = useLanguage();
@@ -47,6 +49,22 @@ export default function AddProductPage() {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  useEffect(() => {
+    if(!user) {
+        setIsVerificationLoading(false);
+        return;
+    }
+    const checkVerification = async () => {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDoc = await getDoc(userDocRef);
+        if (userDoc.exists() && userDoc.data().verificationStatus === 'verified') {
+            setIsVerified(true);
+        }
+        setIsVerificationLoading(false);
+    }
+    checkVerification();
+  }, [user]);
 
   const {
     register,
@@ -161,6 +179,14 @@ export default function AddProductPage() {
 
   const t = translations.addProduct;
 
+  if (isVerificationLoading) {
+    return (
+        <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
+            <Loader2 className="size-12 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   if (!user) {
     return (
       <Alert>
@@ -171,6 +197,25 @@ export default function AddProductPage() {
         </AlertDescription>
       </Alert>
     );
+  }
+  
+  if (!isVerified) {
+     return (
+        <Card className="text-center">
+            <CardHeader>
+                <div className="mx-auto bg-destructive/10 text-destructive p-3 rounded-full w-fit mb-4">
+                    <ShieldAlert className="size-10" />
+                </div>
+                <CardTitle>Verification Required</CardTitle>
+                <CardDescription>You must verify your identity and location before you can post products.</CardDescription>
+            </CardHeader>
+            <CardFooter>
+                 <Button onClick={() => router.push('/dashboard/verify')} className="w-full">
+                    Start Verification
+                </Button>
+            </CardFooter>
+        </Card>
+     )
   }
 
   return (
@@ -268,3 +313,5 @@ export default function AddProductPage() {
     </div>
   );
 }
+
+    
