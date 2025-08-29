@@ -127,12 +127,14 @@ export default function ProductDetailPage() {
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                      <AspectRatio ratio={4/3} className="bg-muted rounded-tl-lg rounded-bl-lg">
-                        <Image
-                            src={product.image}
-                            alt={product.name}
-                            fill
-                            className="object-cover rounded-tl-lg rounded-bl-lg"
-                        />
+                        {product.image && (
+                            <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                className="object-cover rounded-tl-lg rounded-bl-lg"
+                            />
+                        )}
                     </AspectRatio>
                 </div>
                 <div className="p-6 flex flex-col">
