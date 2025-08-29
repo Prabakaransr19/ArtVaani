@@ -14,7 +14,8 @@
         "storyCreation": "Story Creation",
         "discoverCrafts": "Discover Crafts",
         "cart": "Cart",
-        "forArtisans": "For Artisans"
+        "forArtisans": "For Artisans",
+        "profile": "Profile"
     },
     "dashboard": {
         "welcome": "Welcome, Artisan!",
@@ -152,6 +153,27 @@
         "success": {
             "title": "Welcome, Artisan!",
             "description": "Your artisan profile has been created. You now have access to all artisan tools."
+        }
+    },
+    "profile": {
+        "title": "My Profile",
+        "description": "View and edit your artisan details.",
+        "form": {
+            "displayName": { "label": "Full Name" },
+            "city": { "label": "City" },
+            "phoneNumber": { "label": "Phone Number" },
+            "artType": { "label": "Art Type" },
+            "experience": { "label": "Years of Experience" }
+        },
+        "button": "Save Changes",
+        "success": {
+            "title": "Profile Updated",
+            "description": "Your details have been successfully updated."
+        },
+        "myProducts": {
+            "title": "My Products",
+            "description": "The products you have listed for sale.",
+            "placeholder": "You haven't listed any products yet. This feature is coming soon!"
         }
     }
 }

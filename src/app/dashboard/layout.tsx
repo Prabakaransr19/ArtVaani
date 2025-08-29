@@ -91,6 +91,7 @@ export default function DashboardLayout({
     { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true },
     { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true },
     { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true, requiresArtisan: true },
+    { href: '/dashboard/profile', label: translations.sidebar.profile, icon: UserIcon, requiresAuth: true, requiresArtisan: true },
   ];
 
   const menuItems = allMenuItems.filter(item => {
@@ -125,6 +126,7 @@ export default function DashboardLayout({
     if (pathname.startsWith('/dashboard/cart')) return translations.sidebar.cart;
     if (pathname.startsWith('/dashboard/checkout')) return translations.checkout.title;
     if (pathname.startsWith('/dashboard/for-artisans')) return translations.sidebar.forArtisans;
+    if (pathname.startsWith('/dashboard/profile')) return translations.sidebar.profile;
     return 'ArtVaani';
   };
 
@@ -213,6 +215,10 @@ export default function DashboardLayout({
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                            <UserIcon className="mr-2 h-4 w-4" />
+                            <span>{translations.sidebar.profile}</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleSignOut}>
                             <LogOut className="mr-2 h-4 w-4" />
                             <span>Log out</span>
