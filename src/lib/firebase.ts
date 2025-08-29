@@ -1,8 +1,9 @@
+
 // Import the functions you need from the SDKs you need
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getAnalytics, isSupported } from "firebase/analytics";
+import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { getAuth, type Auth } from "firebase/auth";
+import { getFirestore, enableIndexedDbPersistence, type Firestore } from "firebase/firestore";
+import { getAnalytics, isSupported, type Analytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,12 +17,16 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth = getAuth(app);
-const db = getFirestore(app);
+let app: FirebaseApp;
+let auth: Auth;
+let db: Firestore;
+let analytics: Analytics | undefined;
 
-// Enable Firestore offline persistence
 if (typeof window !== 'undefined') {
+    app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
     enableIndexedDbPersistence(db)
       .catch((err) => {
         if (err.code == 'failed-precondition') {
@@ -34,11 +39,7 @@ if (typeof window !== 'undefined') {
           console.warn('Firestore persistence is not available in this browser.');
         }
       });
-}
 
-
-let analytics;
-if (typeof window !== 'undefined') {
   isSupported().then((supported) => {
     if (supported) {
       analytics = getAnalytics(app);
