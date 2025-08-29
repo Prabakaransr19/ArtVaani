@@ -57,12 +57,14 @@ export default function DashboardLayout({
     router.push('/auth');
   };
 
-  const menuItems = [
-    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home },
-    { href: '/dashboard/product-listing', label: translations.sidebar.productListing, icon: PackagePlus },
-    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic },
-    { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search },
+  const allMenuItems = [
+    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true },
+    { href: '/dashboard/product-listing', label: translations.sidebar.productListing, icon: PackagePlus, requiresAuth: false },
+    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true },
+    { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false },
   ];
+
+  const menuItems = allMenuItems.filter(item => !item.requiresAuth || (item.requiresAuth && user));
 
   const getInitials = (name?: string | null) => {
     if (!name) return 'A';
@@ -135,7 +137,7 @@ export default function DashboardLayout({
                 </Button>
             </SidebarTrigger>
             <div className="flex-1">
-                <h1 className="text-lg font-semibold">{menuItems.find(item => item.href === pathname)?.label || 'Dashboard'}</h1>
+                <h1 className="text-lg font-semibold">{allMenuItems.find(item => item.href === pathname)?.label || 'Dashboard'}</h1>
             </div>
              {user && (
                  <DropdownMenu>
