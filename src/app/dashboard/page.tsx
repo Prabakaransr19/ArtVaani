@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -16,16 +16,44 @@ import { ArrowRight, PackagePlus, Mic, Search } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Loader2 } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 export default function DashboardPage() {
     const { translations } = useLanguage();
     const { user, loading } = useAuth();
     const router = useRouter();
+    const [isArtisan, setIsArtisan] = useState(false);
+    const [isRoleLoading, setIsRoleLoading] = useState(true);
 
     useEffect(() => {
-        if (!loading && !user) {
+        if (loading) return;
+
+        if (!user) {
             router.replace('/dashboard/products');
+            return;
         }
+
+        const checkUserRole = async () => {
+            const userDocRef = doc(db, 'users', user.uid);
+            try {
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists() && userDoc.data().isArtisan) {
+                    setIsArtisan(true);
+                } else {
+                    // This is a buyer, redirect to products page
+                    router.replace('/dashboard/products');
+                }
+            } catch (error) {
+                console.error("Error fetching user role, assuming buyer.", error);
+                router.replace('/dashboard/products');
+            } finally {
+                setIsRoleLoading(false);
+            }
+        };
+
+        checkUserRole();
+
     }, [user, loading, router]);
 
 
@@ -50,7 +78,7 @@ export default function DashboardPage() {
         },
     ];
 
-  if (loading || !user) {
+  if (loading || isRoleLoading || !isArtisan) {
     return (
       <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
         <Loader2 className="size-12 animate-spin text-primary" />

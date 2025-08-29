@@ -18,11 +18,13 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/icons';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
   fullName: z.string().min(3, 'Full name must be at least 3 characters.'),
   city: z.string().min(2, 'City is required.'),
   phoneNumber: z.string().min(10, 'Please enter a valid phone number.'),
+  isArtisan: z.boolean().default(false),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -43,6 +45,7 @@ export default function CompleteProfilePage() {
       fullName: user?.displayName || '',
       phoneNumber: user?.phoneNumber || '',
       city: '',
+      isArtisan: false,
     }
   });
 
@@ -66,6 +69,7 @@ export default function CompleteProfilePage() {
         displayName: data.fullName,
         city: data.city,
         phoneNumber: data.phoneNumber,
+        isArtisan: data.isArtisan,
         createdAt: new Date(),
       }, { merge: true });
 
@@ -107,6 +111,15 @@ export default function CompleteProfilePage() {
                 <Label htmlFor="phoneNumber">Phone Number</Label>
                 <Input id="phoneNumber" type="tel" {...register('phoneNumber')} />
                 {errors.phoneNumber && <p className="text-sm text-destructive">{errors.phoneNumber.message}</p>}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="isArtisan" {...register('isArtisan')} />
+                <label
+                  htmlFor="isArtisan"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Are you an artisan? Check here if you want to sell your products.
+                </label>
               </div>
             </CardContent>
             <CardFooter>

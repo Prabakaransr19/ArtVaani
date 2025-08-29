@@ -1,6 +1,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -30,8 +31,9 @@ import { Logo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
-import { auth } from '@/lib/firebase';
+import { auth, db } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -52,6 +54,24 @@ export default function DashboardLayout({
   const router = useRouter();
   const { translations } = useLanguage();
   const { user } = useAuth();
+  const [isArtisan, setIsArtisan] = useState(false);
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+        if (user) {
+            const userDocRef = doc(db, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists() && userDoc.data().isArtisan) {
+                setIsArtisan(true);
+            } else {
+                setIsArtisan(false);
+            }
+        } else {
+            setIsArtisan(false);
+        }
+    };
+    checkUserRole();
+  }, [user]);
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -59,14 +79,24 @@ export default function DashboardLayout({
   };
 
   const allMenuItems = [
-    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true },
-    { href: '/dashboard/products', label: translations.sidebar.products, icon: ShoppingBag, requiresAuth: false },
-    { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true },
-    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true },
-    { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false },
+    // Always visible
+    { href: '/dashboard/products', label: translations.sidebar.products, icon: ShoppingBag, requiresAuth: false, requiresArtisan: false },
+    { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search, requiresAuth: false, requiresArtisan: false },
+    // Artisan only
+    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true },
+    { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true },
+    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true, requiresArtisan: true },
   ];
 
-  const menuItems = allMenuItems.filter(item => !item.requiresAuth || (item.requiresAuth && user));
+  const menuItems = allMenuItems.filter(item => {
+    if (item.requiresArtisan) {
+        return user && isArtisan;
+    }
+    if (item.requiresAuth) {
+        return !!user;
+    }
+    return true;
+  });
 
   const getInitials = (name?: string | null) => {
     if (!name) return 'A';
@@ -78,11 +108,12 @@ export default function DashboardLayout({
   }
 
   const getPageTitle = () => {
-    const currentItem = allMenuItems.find(item => pathname === item.href || (pathname.startsWith(item.href) && item.href !== '/dashboard' && item.href !== '/'));
-    if (currentItem) {
-      return currentItem.label;
-    }
+    // This explicit mapping avoids enumeration issues with newer Next.js versions
     if (pathname === '/dashboard') return translations.sidebar.dashboard;
+    if (pathname.startsWith('/dashboard/products')) return translations.sidebar.products;
+    if (pathname.startsWith('/dashboard/add-product')) return translations.sidebar.addProduct;
+    if (pathname.startsWith('/dashboard/story-creation')) return translations.sidebar.storyCreation;
+    if (pathname.startsWith('/dashboard/discovery')) return translations.sidebar.discoverCrafts;
     return 'ArtVaani';
   };
 
