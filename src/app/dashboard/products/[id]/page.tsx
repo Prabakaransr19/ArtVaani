@@ -19,7 +19,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Loader2, ShoppingCart } from 'lucide-react';
-import { AspectRatio } from '@radix-ui/react-aspect-ratio';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 export default function ProductDetailPage() {
   const { user } = useAuth();
