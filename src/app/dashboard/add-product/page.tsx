@@ -20,7 +20,7 @@ import { Wand2, Loader2, Copy, Send, LogIn } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip';
 
 const formSchema = z.object({
   productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -105,130 +105,133 @@ export default function AddProductPage() {
   );
 
   return (
-    <div className="grid gap-8 md:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t.generator.title}</CardTitle>
-          <CardDescription>{t.generator.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="productName">{t.generator.productName.label}</Label>
-              <Input id="productName" {...register('productName')} placeholder={t.generator.productName.placeholder} />
-              {errors.productName && <p className="text-sm text-destructive">{errors.productName.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="productDescription">{t.generator.productDescription.label}</Label>
-              <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={5} />
-              {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="targetAudience">{t.generator.targetAudience.label}</Label>
-              <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
-              {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="language">{t.generator.language.label}</Label>
-              <Select
-                onValueChange={(value) => {
-                  setValue('language', value);
-                  trigger('language');
-                }}
-                defaultValue={language}
-              >
-                <SelectTrigger id="language">
-                  <SelectValue placeholder={t.generator.language.placeholder} />
-                </SelectTrigger>
-                <SelectContent>
-                  {languages.map((lang) => (
-                    <SelectItem key={lang.value} value={lang.value}>
-                      {lang.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            {!user ? (
-                <Tooltip>
-                    <TooltipTrigger asChild className="w-full">
-                        {generateButton}
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Please sign in to generate a product listing.</p>
-                    </TooltipContent>
-                </Tooltip>
-            ) : (
-                generateButton
-            )}
-          </form>
-        </CardContent>
-      </Card>
+    <TooltipProvider>
+      <div className="grid gap-8 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t.generator.title}</CardTitle>
+            <CardDescription>{t.generator.description}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="productName">{t.generator.productName.label}</Label>
+                <Input id="productName" {...register('productName')} placeholder={t.generator.productName.placeholder} />
+                {errors.productName && <p className="text-sm text-destructive">{errors.productName.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="productDescription">{t.generator.productDescription.label}</Label>
+                <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={5} />
+                {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="targetAudience">{t.generator.targetAudience.label}</Label>
+                <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
+                {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="language">{t.generator.language.label}</Label>
+                <Select
+                  onValueChange={(value) => {
+                    setValue('language', value);
+                    trigger('language');
+                  }}
+                  defaultValue={language}
+                >
+                  <SelectTrigger id="language">
+                    <SelectValue placeholder={t.generator.language.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {!user ? (
+                  <Tooltip>
+                      <TooltipTrigger asChild className="w-full">
+                          {/* The button is wrapped in a span to allow the tooltip to work when the button is disabled */}
+                          <span tabIndex={0} className="inline-block w-full">{generateButton}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                          <p>Please sign in to generate a product listing.</p>
+                      </TooltipContent>
+                  </Tooltip>
+              ) : (
+                  generateButton
+              )}
+            </form>
+          </CardContent>
+        </Card>
 
-      <Card className="flex flex-col">
-        <CardHeader>
-          <CardTitle>{t.generated.title}</CardTitle>
-          <CardDescription>{t.generated.description}</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6 flex-1">
-          {isLoading && (
-            <div className="flex flex-col items-center justify-center h-full space-y-4">
-              <Loader2 className="size-12 animate-spin text-primary" />
-              <p className="text-muted-foreground">{t.generated.loading}</p>
-            </div>
+        <Card className="flex flex-col">
+          <CardHeader>
+            <CardTitle>{t.generated.title}</CardTitle>
+            <CardDescription>{t.generated.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6 flex-1">
+            {isLoading && (
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <Loader2 className="size-12 animate-spin text-primary" />
+                <p className="text-muted-foreground">{t.generated.loading}</p>
+              </div>
+            )}
+            {generatedListing ? (
+              <>
+                <div className="space-y-2">
+                  <Label>{t.generated.generatedTitle}</Label>
+                  <div className="relative">
+                    <Input readOnly value={generatedListing.title} className="pr-10" />
+                    <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.title)}><Copy className="size-4"/></Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t.generated.generatedDescription}</Label>
+                  <div className="relative">
+                    <Textarea readOnly value={generatedListing.description} rows={8} className="pr-10" />
+                    <Button variant="ghost" size="icon" className="absolute top-2 right-1 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.description)}><Copy className="size-4"/></Button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>{t.generated.generatedHashtags}</Label>
+                  <div className="relative">
+                    <Input readOnly value={generatedListing.hashtags} className="pr-10"/>
+                    <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.hashtags)}><Copy className="size-4"/></Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              !isLoading && (
+                <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+                  <Wand2 className="size-12 mb-4"/>
+                  <p>{t.generated.placeholder}</p>
+                </div>
+              )
+            )}
+          </CardContent>
+          {generatedListing && !isLoading && (
+              <CardFooter>
+                  {user ? (
+                      <Button onClick={handlePostProduct} className="w-full">
+                          <Send className="mr-2" />
+                          {t.generated.postButton}
+                      </Button>
+                  ) : (
+                      <Alert>
+                          <LogIn className="size-4" />
+                          <AlertTitle>Sign in to continue</AlertTitle>
+                          <AlertDescription>
+                              Please <Link href="/auth" className="font-bold underline">sign in</Link> to post your product.
+                          </AlertDescription>
+                      </Alert>
+                  )}
+              </CardFooter>
           )}
-          {generatedListing ? (
-            <>
-              <div className="space-y-2">
-                <Label>{t.generated.generatedTitle}</Label>
-                <div className="relative">
-                  <Input readOnly value={generatedListing.title} className="pr-10" />
-                  <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.title)}><Copy className="size-4"/></Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t.generated.generatedDescription}</Label>
-                 <div className="relative">
-                  <Textarea readOnly value={generatedListing.description} rows={8} className="pr-10" />
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-1 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.description)}><Copy className="size-4"/></Button>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label>{t.generated.generatedHashtags}</Label>
-                 <div className="relative">
-                  <Input readOnly value={generatedListing.hashtags} className="pr-10"/>
-                  <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.hashtags)}><Copy className="size-4"/></Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            !isLoading && (
-              <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-                <Wand2 className="size-12 mb-4"/>
-                <p>{t.generated.placeholder}</p>
-              </div>
-            )
-          )}
-        </CardContent>
-        {generatedListing && !isLoading && (
-            <CardFooter>
-                {user ? (
-                    <Button onClick={handlePostProduct} className="w-full">
-                        <Send className="mr-2" />
-                        {t.generated.postButton}
-                    </Button>
-                ) : (
-                    <Alert>
-                        <LogIn className="size-4" />
-                        <AlertTitle>Sign in to continue</AlertTitle>
-                        <AlertDescription>
-                            Please <Link href="/auth" className="font-bold underline">sign in</Link> to post your product.
-                        </AlertDescription>
-                    </Alert>
-                )}
-            </CardFooter>
-        )}
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </TooltipProvider>
   );
 }

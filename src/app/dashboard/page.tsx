@@ -1,6 +1,8 @@
 
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Card,
@@ -12,15 +14,26 @@ import {
 import { Button } from '@/components/ui/button';
 import { ArrowRight, PackagePlus, Mic, Search } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
+import { useAuth } from '@/hooks/use-auth';
+import { Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
     const { translations } = useLanguage();
+    const { user, loading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!loading && !user) {
+            router.replace('/dashboard/products');
+        }
+    }, [user, loading, router]);
+
 
     const tools = [
         {
             title: translations.dashboard.tools.productListing.title,
             description: translations.dashboard.tools.productListing.description,
-            href: '/dashboard/product-listing',
+            href: '/dashboard/add-product',
             icon: <PackagePlus className="size-8 text-primary" />,
         },
         {
@@ -36,6 +49,14 @@ export default function DashboardPage() {
             icon: <Search className="size-8 text-primary" />,
         },
     ];
+
+  if (loading || !user) {
+    return (
+      <div className="flex h-[calc(100vh-10rem)] items-center justify-center">
+        <Loader2 className="size-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6">
