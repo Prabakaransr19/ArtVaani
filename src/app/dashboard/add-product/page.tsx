@@ -9,8 +9,10 @@ import { z } from 'zod';
 import Image from 'next/image';
 import Link from 'next/link';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
-import { db, auth } from '@/lib/firebase';
+import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
@@ -129,6 +131,12 @@ export default function AddProductPage() {
 
     setIsLoading(true);
     try {
+        // 1. Upload image to Firebase Storage
+        const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
+        const snapshot = await uploadBytes(imageRef, productImage.file);
+        const imageUrl = await getDownloadURL(snapshot.ref);
+
+        // 2. Save product to Firestore with the image URL
         const productsCollection = collection(db, 'products');
         await addDoc(productsCollection, {
             name: generatedListing.title,
@@ -136,7 +144,7 @@ export default function AddProductPage() {
             story: generatedListing.story,
             price: generatedListing.suggestedPrice,
             hashtags: generatedListing.hashtags,
-            image: productImage.preview, // In a real app, upload to storage and save URL
+            image: imageUrl, 
             userId: user.uid,
             createdAt: serverTimestamp(),
             language: language,

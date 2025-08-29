@@ -141,6 +141,7 @@ export default function ProductsPage() {
                                 alt={product.name} 
                                 fill 
                                 className="object-cover"
+                                unoptimized // If using Firebase Storage, you might not need Next.js optimization
                             />
                         </div>
                     </CardHeader>
