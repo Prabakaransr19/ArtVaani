@@ -40,7 +40,7 @@ const products = [
     name: 'Pashmina Shawl',
     price: '₹7,999',
     raw_price: 7999,
-    image: 'https://images.unsplash.com/photo-1566534335938-05f1f2949435?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxQYXNobWluYSUyMFNoYXdsfGVufDB8fHx8MTc1NjQ4NzYxOXww&ixlib=rb-4.1.0&q=80&w=1080',
+    image: 'https://images.unsplash.com/photo-1707978932202-751b08324daf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwzfHxzaGF3bHxlbnwwfHx8fDE3NTY0ODc3MzZ8MA&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'pashmina shawl',
     tags: ['Luxury', 'Fashion'],
     description: 'An exquisitely soft and warm Pashmina shawl, handwoven by artisans in Kashmir. A timeless piece of luxury.'
