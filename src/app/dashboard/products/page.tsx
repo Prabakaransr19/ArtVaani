@@ -60,7 +60,7 @@ const products = [
     name: 'Jaipuri Blue Pottery Plate',
     price: '₹1,599',
     raw_price: 1599,
-    image: 'https://picsum.photos/600/400?random=5',
+    image: 'https://images.unsplash.com/photo-1725205340990-035b8340e7b0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxKYWlwdXJpJTIwQmx1ZSUyMFBvdHRlcnklMjBQbGF0ZXxlbnwwfHx8fDE3NTY0ODc4Njl8MA&ixlib=rb-4.1.0&q=80&w=1080',
     hint: 'blue pottery',
     tags: ['Ceramic', 'Decorative'],
     description: 'A stunning decorative plate made using the famous Jaipuri blue pottery technique. Features a beautiful floral design.'
