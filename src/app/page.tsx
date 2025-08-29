@@ -1,40 +1,70 @@
 
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/icons';
 import { ArrowRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { languages } from '@/lib/languages';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useLanguage } from '@/context/language-context';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
-  const [year, setYear] = useState<number | null>(null);
+  const router = useRouter();
+  const { language, setLanguage, translations } = useLanguage();
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setYear(new Date().getFullYear());
+    setIsClient(true);
   }, []);
+
+  const handleContinue = () => {
+    router.push('/dashboard');
+  };
+
+  if (!isClient) {
+    return null; // Or a loading spinner
+  }
 
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-8">
-      <div className="flex flex-col items-center justify-center text-center space-y-6 max-w-2xl">
+      <div className="flex flex-col items-center justify-center w-full max-w-md">
         <Logo className="h-24 w-auto text-primary" />
         <h1 className="text-5xl md:text-7xl font-headline text-foreground">
           ArtVaani
         </h1>
-        <p className="text-lg md:text-xl text-muted-foreground">
-          Empowering artisans by giving a voice to their craft. Discover unique stories and handmade products from across India.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <Button asChild size="lg" className="shadow-lg">
-            <Link href="/dashboard">
-              Enter the Marketplace <ArrowRight />
-            </Link>
-          </Button>
-        </div>
+        <Card className="w-full mt-8">
+            <CardHeader className="text-center">
+                <CardTitle>{translations.languageSelector.title}</CardTitle>
+                <CardDescription>{translations.languageSelector.description}</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <div className="space-y-2">
+                    <Label htmlFor="language">{translations.languageSelector.label}</Label>
+                    <Select onValueChange={setLanguage} defaultValue={language}>
+                        <SelectTrigger id="language">
+                            <SelectValue placeholder={translations.languageSelector.placeholder} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {languages.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                                {lang.label}
+                            </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleContinue} className="w-full">
+                    {translations.languageSelector.button} <ArrowRight className="ml-2" />
+                </Button>
+            </CardFooter>
+        </Card>
       </div>
-      <footer className="absolute bottom-4 text-center text-sm text-muted-foreground">
-        <p>&copy; {year || new Date().getFullYear()} ArtVaani. All rights reserved.</p>
-      </footer>
     </main>
   );
 }

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -22,13 +23,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Logo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-
-const menuItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/product-listing', label: 'Product Listing', icon: PackagePlus },
-  { href: '/dashboard/story-creation', label: 'Story Creation', icon: Mic },
-  { href: '/dashboard/discovery', label: 'Discover Crafts', icon: Search },
-];
+import { useLanguage } from '@/context/language-context';
 
 export default function DashboardLayout({
   children,
@@ -36,6 +31,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { translations } = useLanguage();
+
+  const menuItems = [
+    { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home },
+    { href: '/dashboard/product-listing', label: translations.sidebar.productListing, icon: PackagePlus },
+    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic },
+    { href: '/dashboard/discovery', label: translations.sidebar.discoverCrafts, icon: Search },
+  ];
 
   return (
     <SidebarProvider>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -15,6 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { languages } from '@/lib/languages';
 import { Wand2, Loader2, Copy, Send } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 const formSchema = z.object({
   productName: z.string().min(3, 'Product name must be at least 3 characters long.'),
@@ -29,6 +31,7 @@ export default function ProductListingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
   const { toast } = useToast();
+  const { language, translations } = useLanguage();
 
   const {
     register,
@@ -38,7 +41,7 @@ export default function ProductListingPage() {
     trigger,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { language: 'en' },
+    defaultValues: { language: language },
   });
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
@@ -73,42 +76,44 @@ export default function ProductListingPage() {
       description: 'Your product has been successfully posted.',
     });
   };
+  
+  const t = translations.productListing;
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>AI Listing Generator</CardTitle>
-          <CardDescription>Fill in your product details and let AI do the writing.</CardDescription>
+          <CardTitle>{t.generator.title}</CardTitle>
+          <CardDescription>{t.generator.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="productName">Product Name</Label>
-              <Input id="productName" {...register('productName')} placeholder="e.g., Hand-painted Terracotta Vase" />
+              <Label htmlFor="productName">{t.generator.productName.label}</Label>
+              <Input id="productName" {...register('productName')} placeholder={t.generator.productName.placeholder} />
               {errors.productName && <p className="text-sm text-destructive">{errors.productName.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="productDescription">Product Description</Label>
-              <Textarea id="productDescription" {...register('productDescription')} placeholder="Describe the materials, dimensions, and story behind your product." rows={5} />
+              <Label htmlFor="productDescription">{t.generator.productDescription.label}</Label>
+              <Textarea id="productDescription" {...register('productDescription')} placeholder={t.generator.productDescription.placeholder} rows={5} />
               {errors.productDescription && <p className="text-sm text-destructive">{errors.productDescription.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="targetAudience">Target Audience</Label>
-              <Input id="targetAudience" {...register('targetAudience')} placeholder="e.g., Home decor enthusiasts, art collectors" />
+              <Label htmlFor="targetAudience">{t.generator.targetAudience.label}</Label>
+              <Input id="targetAudience" {...register('targetAudience')} placeholder={t.generator.targetAudience.placeholder} />
               {errors.targetAudience && <p className="text-sm text-destructive">{errors.targetAudience.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="language">Language</Label>
+              <Label htmlFor="language">{t.generator.language.label}</Label>
               <Select
                 onValueChange={(value) => {
                   setValue('language', value);
                   trigger('language');
                 }}
-                defaultValue="en"
+                defaultValue={language}
               >
                 <SelectTrigger id="language">
-                  <SelectValue placeholder="Select language" />
+                  <SelectValue placeholder={t.generator.language.placeholder} />
                 </SelectTrigger>
                 <SelectContent>
                   {languages.map((lang) => (
@@ -125,7 +130,7 @@ export default function ProductListingPage() {
               ) : (
                 <Wand2 className="mr-2" />
               )}
-              Generate Listing
+              {t.generator.button}
             </Button>
           </form>
         </CardContent>
@@ -133,34 +138,34 @@ export default function ProductListingPage() {
 
       <Card className="flex flex-col">
         <CardHeader>
-          <CardTitle>Generated Content</CardTitle>
-          <CardDescription>Review the AI-generated content below. Copy and use it in your listings.</CardDescription>
+          <CardTitle>{t.generated.title}</CardTitle>
+          <CardDescription>{t.generated.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 flex-1">
           {isLoading && (
             <div className="flex flex-col items-center justify-center h-full space-y-4">
               <Loader2 className="size-12 animate-spin text-primary" />
-              <p className="text-muted-foreground">Generating your listing...</p>
+              <p className="text-muted-foreground">{t.generated.loading}</p>
             </div>
           )}
           {generatedListing ? (
             <>
               <div className="space-y-2">
-                <Label>Generated Title</Label>
+                <Label>{t.generated.generatedTitle}</Label>
                 <div className="relative">
                   <Input readOnly value={generatedListing.title} className="pr-10" />
                   <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.title)}><Copy className="size-4"/></Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Generated Description</Label>
+                <Label>{t.generated.generatedDescription}</Label>
                  <div className="relative">
                   <Textarea readOnly value={generatedListing.description} rows={8} className="pr-10" />
                   <Button variant="ghost" size="icon" className="absolute top-2 right-1 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.description)}><Copy className="size-4"/></Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Generated Hashtags</Label>
+                <Label>{t.generated.generatedHashtags}</Label>
                  <div className="relative">
                   <Input readOnly value={generatedListing.hashtags} className="pr-10"/>
                   <Button variant="ghost" size="icon" className="absolute top-1/2 right-1 -translate-y-1/2 h-7 w-7" onClick={() => handleCopyToClipboard(generatedListing.hashtags)}><Copy className="size-4"/></Button>
@@ -171,7 +176,7 @@ export default function ProductListingPage() {
             !isLoading && (
               <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <Wand2 className="size-12 mb-4"/>
-                <p>Your generated content will appear here.</p>
+                <p>{t.generated.placeholder}</p>
               </div>
             )
           )}
@@ -180,7 +185,7 @@ export default function ProductListingPage() {
             <CardFooter>
                 <Button onClick={handlePostProduct} className="w-full">
                     <Send className="mr-2" />
-                    Post Product
+                    {t.generated.postButton}
                 </Button>
             </CardFooter>
         )}

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -12,15 +13,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, Search, Volume2, Sparkles } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 export default function DiscoveryPage() {
   const [craftName, setCraftName] = useState('');
-  const [language, setLanguage] = useState('en');
   const [insights, setInsights] = useState<{craft: string; text: string} | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
   const { speak, isSpeaking } = useTextToSpeech();
+  const { language, setLanguage: setContextLanguage, translations } = useLanguage();
 
   const handleGetInsights = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,29 +49,31 @@ export default function DiscoveryPage() {
     }
   };
 
+  const t = translations.discover;
+
   return (
     <div className="flex flex-col gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Discover Cultural Insights</CardTitle>
-          <CardDescription>Enter the name of a craft to learn about its origins and history.</CardDescription>
+          <CardTitle>{t.form.title}</CardTitle>
+          <CardDescription>{t.form.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleGetInsights} className="flex flex-col sm:flex-row items-end gap-4">
             <div className="flex-1 w-full space-y-2">
-              <Label htmlFor="craftName">Craft Name</Label>
+              <Label htmlFor="craftName">{t.form.craftName.label}</Label>
               <Input
                 id="craftName"
                 value={craftName}
                 onChange={(e) => setCraftName(e.target.value)}
-                placeholder="e.g., Madhubani Painting, Pottery..."
+                placeholder={t.form.craftName.placeholder}
               />
             </div>
             <div className="w-full sm:w-48 space-y-2">
-                <Label htmlFor="language">Language</Label>
-                <Select onValueChange={setLanguage} defaultValue={language}>
+                <Label htmlFor="language">{t.form.language.label}</Label>
+                <Select onValueChange={setContextLanguage} defaultValue={language}>
                 <SelectTrigger id="language">
-                    <SelectValue placeholder="Select language" />
+                    <SelectValue placeholder={t.form.language.placeholder} />
                 </SelectTrigger>
                 <SelectContent>
                     {languages.map((lang) => (
@@ -86,7 +90,7 @@ export default function DiscoveryPage() {
               ) : (
                 <Search className="mr-2" />
               )}
-              Discover
+              {t.form.button}
             </Button>
           </form>
         </CardContent>
@@ -95,7 +99,7 @@ export default function DiscoveryPage() {
       {isLoading && (
         <div className="flex flex-col items-center justify-center h-48 space-y-4">
           <Loader2 className="size-12 animate-spin text-primary" />
-          <p className="text-muted-foreground">Uncovering stories...</p>
+          <p className="text-muted-foreground">{t.results.loading}</p>
         </div>
       )}
 
@@ -103,15 +107,15 @@ export default function DiscoveryPage() {
         <Card className="animate-in fade-in-50">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Insights on {insights.craft}</CardTitle>
-              <CardDescription>The cultural history and significance of {insights.craft}.</CardDescription>
+              <CardTitle>{t.results.title} {insights.craft}</CardTitle>
+              <CardDescription>{t.results.description} {insights.craft}.</CardDescription>
             </div>
             <Button
                 variant="outline"
                 size="icon"
                 onClick={() => speak(insights.text, language)}
                 disabled={isSpeaking}
-                aria-label="Read insights aloud"
+                aria-label={t.results.readAloud}
             >
                 <Volume2 className={`size-5 ${isSpeaking ? 'text-primary' : ''}`} />
             </Button>
@@ -125,8 +129,8 @@ export default function DiscoveryPage() {
       {!insights && !isLoading && (
         <div className="text-center py-16 text-muted-foreground">
             <Sparkles className="mx-auto size-12 mb-4" />
-            <h3 className="text-lg font-semibold">Ready to Explore?</h3>
-            <p>Enter a craft name above to begin your journey.</p>
+            <h3 className="text-lg font-semibold">{t.placeholder.title}</h3>
+            <p>{t.placeholder.description}</p>
         </div>
       )}
     </div>

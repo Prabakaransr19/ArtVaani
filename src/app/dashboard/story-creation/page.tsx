@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -12,13 +13,13 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Mic, Square, Loader2, Wand2, Volume2, Waves } from 'lucide-react';
+import { useLanguage } from '@/context/language-context';
 
 export default function StoryCreationPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioURL, setAudioURL] = useState<string | null>(null);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [narrative, setNarrative] = useState('');
-  const [language, setLanguage] = useState('en');
   const [isLoading, setIsLoading] = useState(false);
   const [isClient, setIsClient] = useState(false);
   
@@ -27,6 +28,7 @@ export default function StoryCreationPage() {
 
   const { toast } = useToast();
   const { speak, isSpeaking } = useTextToSpeech();
+  const { language, setLanguage: setContextLanguage, translations } = useLanguage();
   
   useEffect(() => {
     setIsClient(true);
@@ -102,19 +104,21 @@ export default function StoryCreationPage() {
     };
   };
 
+  const t = translations.storyCreation;
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <Card>
         <CardHeader>
-          <CardTitle>AI Storytelling Assistant</CardTitle>
-          <CardDescription>Record your story, and our AI will craft a beautiful narrative.</CardDescription>
+          <CardTitle>{t.assistant.title}</CardTitle>
+          <CardDescription>{t.assistant.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label>Step 1: Select Language</Label>
-            <Select onValueChange={setLanguage} defaultValue={language}>
+            <Label>{t.assistant.step1}</Label>
+            <Select onValueChange={setContextLanguage} defaultValue={language}>
               <SelectTrigger>
-                <SelectValue placeholder="Select language" />
+                <SelectValue placeholder={t.assistant.languagePlaceholder} />
               </SelectTrigger>
               <SelectContent>
                 {languages.map((lang) => (
@@ -126,10 +130,10 @@ export default function StoryCreationPage() {
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Step 2: Record Your Story</Label>
+            <Label>{t.assistant.step2}</Label>
             <div className='flex items-center gap-4'>
                 <Button onClick={isRecording ? stopRecording : startRecording} disabled={!isClient || isLoading} className="w-40">
-                {isRecording ? <><Square className="mr-2" /> Stop Recording</> : <><Mic className="mr-2" /> Start Recording</>}
+                {isRecording ? <><Square className="mr-2" /> {t.assistant.stopRecording}</> : <><Mic className="mr-2" /> {t.assistant.startRecording}</>}
               </Button>
               {isRecording && <Waves className="size-8 text-primary animate-pulse" />}
             </div>
@@ -138,7 +142,7 @@ export default function StoryCreationPage() {
 
           {audioURL && (
             <div className="space-y-2">
-              <Label>Your Recording</Label>
+              <Label>{t.assistant.yourRecording}</Label>
               <audio src={audioURL} controls className="w-full" />
             </div>
           )}
@@ -146,21 +150,21 @@ export default function StoryCreationPage() {
         <CardFooter>
           <Button onClick={handleGenerateNarrative} disabled={!audioURL || isLoading} className="w-full">
             {isLoading ? <Loader2 className="animate-spin" /> : <Wand2 className="mr-2" />}
-            Generate Narrative
+            {t.assistant.generateButton}
           </Button>
         </CardFooter>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle>Generated Narrative</CardTitle>
-          <CardDescription>Review the AI-generated narrative. You can listen to it being read out loud.</CardDescription>
+          <CardTitle>{t.narrative.title}</CardTitle>
+          <CardDescription>{t.narrative.description}</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
              <div className="flex flex-col items-center justify-center h-full space-y-4">
               <Loader2 className="size-12 animate-spin text-primary" />
-              <p className="text-muted-foreground">Crafting your story...</p>
+              <p className="text-muted-foreground">{t.narrative.loading}</p>
             </div>
           ) : narrative ? (
             <div className="relative">
@@ -171,7 +175,7 @@ export default function StoryCreationPage() {
                     className="absolute top-2 right-1 h-8 w-8"
                     onClick={() => speak(narrative, language)}
                     disabled={isSpeaking}
-                    aria-label="Read narrative aloud"
+                    aria-label={t.narrative.readAloud}
                 >
                     <Volume2 className={`size-5 ${isSpeaking ? 'text-primary' : ''}`} />
                 </Button>
@@ -179,7 +183,7 @@ export default function StoryCreationPage() {
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
                 <Mic className="size-12 mb-4"/>
-                <p>Your generated story will appear here.</p>
+                <p>{t.narrative.placeholder}</p>
               </div>
           )}
         </CardContent>

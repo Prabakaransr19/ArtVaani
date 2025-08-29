@@ -1,0 +1,113 @@
+
+{
+    "languageSelector": {
+        "title": "Choose Your Language",
+        "description": "Select your preferred language to continue.",
+        "label": "Language",
+        "placeholder": "Select language",
+        "button": "Continue"
+    },
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "productListing": "Product Listing",
+        "storyCreation": "Story Creation",
+        "discoverCrafts": "Discover Crafts"
+    },
+    "dashboard": {
+        "welcome": "Welcome, Artisan!",
+        "subheading": "Here are the tools to help you share your craft with the world.",
+        "useTool": "Use Tool",
+        "tools": {
+            "productListing": {
+                "title": "AI Product Listing Tool",
+                "description": "Effortlessly create compelling product titles, descriptions, and hashtags for your crafts."
+            },
+            "storyCreation": {
+                "title": "AI Storytelling Tool",
+                "description": "Convert your spoken stories into engaging cultural narratives for your audience."
+            },
+            "discoverCrafts": {
+                "title": "Discover Crafts",
+                "description": "Explore the rich history and cultural significance behind various artisanal crafts."
+            }
+        }
+    },
+    "productListing": {
+        "generator": {
+            "title": "AI Listing Generator",
+            "description": "Fill in your product details and let AI do the writing.",
+            "productName": {
+                "label": "Product Name",
+                "placeholder": "e.g., Hand-painted Terracotta Vase"
+            },
+            "productDescription": {
+                "label": "Product Description",
+                "placeholder": "Describe the materials, dimensions, and story behind your product."
+            },
+            "targetAudience": {
+                "label": "Target Audience",
+                "placeholder": "e.g., Home decor enthusiasts, art collectors"
+            },
+            "language": {
+                "label": "Language",
+                "placeholder": "Select language"
+            },
+            "button": "Generate Listing"
+        },
+        "generated": {
+            "title": "Generated Content",
+            "description": "Review the AI-generated content below. Copy and use it in your listings.",
+            "loading": "Generating your listing...",
+            "generatedTitle": "Generated Title",
+            "generatedDescription": "Generated Description",
+            "generatedHashtags": "Generated Hashtags",
+            "placeholder": "Your generated content will appear here.",
+            "postButton": "Post Product"
+        }
+    },
+    "storyCreation": {
+        "assistant": {
+            "title": "AI Storytelling Assistant",
+            "description": "Record your story, and our AI will craft a beautiful narrative.",
+            "step1": "Step 1: Select Language",
+            "languagePlaceholder": "Select language",
+            "step2": "Step 2: Record Your Story",
+            "startRecording": "Start Recording",
+            "stopRecording": "Stop Recording",
+            "yourRecording": "Your Recording",
+            "generateButton": "Generate Narrative"
+        },
+        "narrative": {
+            "title": "Generated Narrative",
+            "description": "Review the AI-generated narrative. You can listen to it being read out loud.",
+            "loading": "Crafting your story...",
+            "readAloud": "Read narrative aloud",
+            "placeholder": "Your generated story will appear here."
+        }
+    },
+    "discover": {
+        "form": {
+            "title": "Discover Cultural Insights",
+            "description": "Enter the name of a craft to learn about its origins and history.",
+            "craftName": {
+                "label": "Craft Name",
+                "placeholder": "e.g., Madhubani Painting, Pottery..."
+            },
+            "language": {
+                "label": "Language",
+                "placeholder": "Select language"
+            },
+            "button": "Discover"
+        },
+        "results": {
+            "loading": "Uncovering stories...",
+            "title": "Insights on",
+            "description": "The cultural history and significance of",
+            "readAloud": "Read insights aloud"
+        },
+        "placeholder": {
+            "title": "Ready to Explore?",
+            "description": "Enter a craft name above to begin your journey."
+        }
+    }
+}
