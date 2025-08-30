@@ -11,7 +11,7 @@ import Link from 'next/link';
 import { generateProductListing, type GenerateProductListingOutput } from '@/ai/flows/generate-product-listing';
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
 
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +35,7 @@ type FormValues = z.infer<typeof formSchema>;
 export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
-  const [productImage, setProductImage] = useState<{ file: File, preview: string } | null>(null);
+  const [productImage, setProductImage] = useState<{ file: File, preview: string, dataUrl: string } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [step, setStep] = useState(1);
@@ -79,7 +79,12 @@ export default function AddProductPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setProductImage({ file, preview: URL.createObjectURL(file) });
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        setProductImage({ file, preview: URL.createObjectURL(file), dataUrl });
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -123,24 +128,19 @@ export default function AddProductPage() {
     setIsLoading(true);
     setGeneratedListing(null);
 
-    const reader = new FileReader();
-    reader.readAsDataURL(productImage.file);
-    reader.onloadend = async () => {
-        const base64Image = reader.result as string;
-        try {
-            const result = await generateProductListing({
-              ...data,
-              language: language,
-              photoDataUri: base64Image,
-            });
-            setGeneratedListing(result);
-            setStep(2); // Move to the editing step
-        } catch (error) {
-            console.error('Error generating product listing:', error);
-            toast({ variant: 'destructive', title: 'Generation Failed' });
-        } finally {
-            setIsLoading(false);
-        }
+    try {
+        const result = await generateProductListing({
+          ...data,
+          language: language,
+          photoDataUri: productImage.dataUrl,
+        });
+        setGeneratedListing(result);
+        setStep(2); // Move to the editing step
+    } catch (error) {
+        console.error('Error generating product listing:', error);
+        toast({ variant: 'destructive', title: 'Generation Failed' });
+    } finally {
+        setIsLoading(false);
     }
   };
 
@@ -151,10 +151,11 @@ export default function AddProductPage() {
     try {
         // 1. Upload image to Firebase Storage
         const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
-        const snapshot = await uploadBytes(imageRef, productImage.file);
+        // We upload the data URL string, not the file blob.
+        const snapshot = await uploadString(imageRef, productImage.dataUrl, 'data_url');
         const imageUrl = await getDownloadURL(snapshot.ref);
 
-        // 2. Save product to Firestore with the image URL
+        // 2. Save product to Firestore with the new image URL
         const productsCollection = collection(db, 'products');
         await addDoc(productsCollection, {
             name: generatedListing.title,
@@ -313,5 +314,3 @@ export default function AddProductPage() {
     </div>
   );
 }
-
-    
