@@ -198,17 +198,20 @@ export default function AddProductPage() {
     try {
         // 1. Upload the ORIGINAL, full-quality image to Firebase Storage
         const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
-        // We upload the original data URL string, not the thumbnail.
         const snapshot = await uploadString(imageRef, productImage.dataUrl, 'data_url');
         const imageUrl = await getDownloadURL(snapshot.ref);
 
-        // 2. Save product to Firestore with the new image URL
+        // 2. Parse price string to a number
+        const raw_price = parseFloat(generatedListing.suggestedPrice.replace(/[^0-9.-]+/g,""));
+
+        // 3. Save product to Firestore with the new image URL
         const productsCollection = collection(db, 'products');
         await addDoc(productsCollection, {
             name: generatedListing.title,
             description: generatedListing.description,
             story: generatedListing.story,
             price: generatedListing.suggestedPrice,
+            raw_price: isNaN(raw_price) ? 0 : raw_price,
             hashtags: generatedListing.hashtags,
             image: imageUrl, 
             userId: user.uid,

@@ -21,7 +21,7 @@ export interface Product {
     description: string;
     story: string;
     price: string;
-    raw_price: number;
+    raw_price?: number;
     image: string;
     hashtags: string;
     userId: string;
@@ -133,3 +133,5 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+    

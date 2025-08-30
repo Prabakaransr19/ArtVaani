@@ -76,7 +76,7 @@ export default function CartPage() {
     }
   };
 
-  const total = cartItems.reduce((sum, item) => sum + (item.raw_price * item.quantity), 0);
+  const total = cartItems.reduce((sum, item) => sum + ((item.raw_price || 0) * item.quantity), 0);
   
   const t = translations.cart;
 
@@ -134,7 +134,7 @@ export default function CartPage() {
                         <Plus className="size-4"/>
                     </Button>
                   </div>
-                  <p className="w-24 text-right font-medium">₹{(item.raw_price * item.quantity).toLocaleString('en-IN')}</p>
+                  <p className="w-24 text-right font-medium">₹{((item.raw_price || 0) * item.quantity).toLocaleString('en-IN')}</p>
                   <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive" onClick={() => removeItem(item.id)}>
                     <Trash2 className="size-5"/>
                   </Button>
@@ -175,3 +175,5 @@ export default function CartPage() {
     </div>
   );
 }
+
+    

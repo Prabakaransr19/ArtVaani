@@ -83,7 +83,8 @@ export default function ProductDetailPage() {
     } else {
         try {
           const cartRef = doc(collection(db, 'users', user.uid, 'cart'), product.id);
-          const raw_price = parseFloat(product.price.replace(/[^0-9.-]+/g,""));
+          const raw_price = product.raw_price ?? parseFloat(product.price.replace(/[^0-9.-]+/g,""));
+          
           await setDoc(cartRef, {
             id: product.id,
             name: product.name,
@@ -199,3 +200,5 @@ export default function ProductDetailPage() {
     </div>
   );
 }
+
+    
