@@ -112,6 +112,16 @@ export default function ProductDetailPage() {
         }
     }
   };
+  
+  const isValidImageUrl = (url: string) => {
+    try {
+        if (!url) return false;
+        const parsedUrl = new URL(url);
+        return parsedUrl.protocol === 'https:' && parsedUrl.hostname.includes('firebasestorage.googleapis.com');
+    } catch (e) {
+        return false;
+    }
+  }
 
 
   if (loading) {
@@ -132,7 +142,7 @@ export default function ProductDetailPage() {
             <div className="grid md:grid-cols-2 gap-8">
                 <div>
                      <AspectRatio ratio={4/3} className="bg-muted rounded-tl-lg rounded-bl-lg">
-                        {product.image && (
+                        {isValidImageUrl(product.image) && (
                             <Image
                                 src={product.image}
                                 alt={product.name}
@@ -180,13 +190,15 @@ export default function ProductDetailPage() {
                         <Link key={relatedProduct.id} href={`/dashboard/products/${relatedProduct.id}`} className="flex">
                             <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 w-full">
                             <CardHeader className="p-0">
-                                <div className="relative aspect-video">
-                                    <Image 
-                                        src={relatedProduct.image} 
-                                        alt={relatedProduct.name} 
-                                        fill 
-                                        className="object-cover"
-                                    />
+                                <div className="relative aspect-video bg-muted">
+                                    {isValidImageUrl(relatedProduct.image) && (
+                                      <Image 
+                                          src={relatedProduct.image} 
+                                          alt={relatedProduct.name} 
+                                          fill 
+                                          className="object-cover"
+                                      />
+                                    )}
                                 </div>
                             </CardHeader>
                             <CardContent className="p-4 flex-grow">
@@ -204,4 +216,3 @@ export default function ProductDetailPage() {
     </div>
   );
 }
-
