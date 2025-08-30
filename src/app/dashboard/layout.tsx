@@ -103,6 +103,7 @@ export default function DashboardLayout({
     // Artisan only
     { href: '/dashboard', label: translations.sidebar.dashboard, icon: Home, requiresAuth: true, requiresArtisan: true, requiresVerified: true },
     { href: '/dashboard/add-product', label: translations.sidebar.addProduct, icon: PackagePlus, requiresAuth: true, requiresArtisan: true, requiresVerified: true },
+    { href: '/dashboard/story-creation', label: translations.sidebar.storyCreation, icon: Mic, requiresAuth: true, requiresArtisan: true, requiresVerified: true },
     { href: '/dashboard/verify', label: translations.sidebar.verify, icon: ShieldCheck, requiresAuth: true, requiresArtisan: true, requiresVerified: 'not-verified' },
 
   ];
@@ -136,10 +137,10 @@ export default function DashboardLayout({
   }
 
   const getPageTitle = () => {
-    // This explicit mapping avoids enumeration issues with newer Next.js versions
     if (pathname === '/dashboard') return translations.sidebar.dashboard;
     if (pathname.startsWith('/dashboard/products')) return translations.sidebar.products;
     if (pathname.startsWith('/dashboard/add-product')) return translations.sidebar.addProduct;
+    if (pathname.startsWith('/dashboard/story-creation')) return translations.sidebar.storyCreation;
     if (pathname.startsWith('/dashboard/discovery')) return translations.sidebar.discoverCrafts;
     if (pathname.startsWith('/dashboard/cart')) return translations.sidebar.cart;
     if (pathname.startsWith('/dashboard/checkout')) return translations.checkout.title;
@@ -253,5 +254,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    

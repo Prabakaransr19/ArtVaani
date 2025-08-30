@@ -118,14 +118,12 @@ export default function AddProductPage() {
       const file = e.target.files[0];
       const preview = URL.createObjectURL(file);
       
-      // We need the original data URL for the final upload
       const reader = new FileReader();
       reader.readAsDataURL(file);
       reader.onload = async (event) => {
           const dataUrl = event.target?.result as string;
           try {
-             // And we create a smaller thumbnail to send to the AI
-            const thumbnailUrl = await resizeImage(file, 512); // Resize to max 512px
+            const thumbnailUrl = await resizeImage(file, 512); 
             setProductImage({ file, preview, dataUrl, thumbnailUrl });
           } catch (error) {
             console.error("Image resizing failed:", error);
@@ -179,13 +177,13 @@ export default function AddProductPage() {
         const result = await generateProductListing({
           ...data,
           language: language,
-          photoDataUri: productImage.thumbnailUrl, // Use the smaller thumbnail for AI processing
+          photoDataUri: productImage.thumbnailUrl,
         });
         setGeneratedListing(result);
-        setStep(2); // Move to the editing step
+        setStep(2); 
     } catch (error) {
         console.error('Error generating product listing:', error);
-        toast({ variant: 'destructive', title: 'Generation Failed' });
+        toast({ variant: 'destructive', title: 'Generation Failed', description: 'Could not generate listing. Please try again.' });
     } finally {
         setIsLoading(false);
     }
@@ -196,20 +194,17 @@ export default function AddProductPage() {
 
     setIsLoading(true);
     try {
-        // 1. Upload the ORIGINAL, full-quality image to Firebase Storage
         const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
         const snapshot = await uploadString(imageRef, productImage.dataUrl, 'data_url');
         const imageUrl = await getDownloadURL(snapshot.ref);
 
-        // 2. Parse price string to a number
         const raw_price = parseFloat(generatedListing.suggestedPrice.replace(/[^0-9.-]+/g,""));
 
-        // 3. Save product to Firestore with the new image URL
         const productsCollection = collection(db, 'products');
         await addDoc(productsCollection, {
             name: generatedListing.title,
             description: generatedListing.description,
-            story: generatedListing.story,
+            story: "", // Story is now handled separately
             price: generatedListing.suggestedPrice,
             raw_price: isNaN(raw_price) ? 0 : raw_price,
             hashtags: generatedListing.hashtags,
@@ -308,7 +303,7 @@ export default function AddProductPage() {
                     </CardContent>
                     <CardFooter>
                          <Button type="submit" disabled={isLoading || !productImage} className="w-full">
-                            {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" /> Generate Listing with AI</>}
+                            {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" /> {t.generator.button}</>}
                         </Button>
                     </CardFooter>
                 </form>
@@ -344,10 +339,6 @@ export default function AddProductPage() {
                         <Label>Description</Label>
                         <Textarea value={generatedListing.description} rows={5} onChange={(e) => setGeneratedListing({...generatedListing, description: e.target.value})} />
                     </div>
-                    <div className="space-y-2">
-                        <Label>Story</Label>
-                        <Textarea value={generatedListing.story} rows={5} onChange={(e) => setGeneratedListing({...generatedListing, story: e.target.value})} />
-                    </div>
                      <div className="space-y-2">
                         <Label>Hashtags</Label>
                         <Input value={generatedListing.hashtags} onChange={(e) => setGeneratedListing({...generatedListing, hashtags: e.target.value})} />
@@ -356,7 +347,7 @@ export default function AddProductPage() {
                  <CardFooter className="flex justify-between">
                      <Button variant="ghost" onClick={() => setStep(1)}>Back</Button>
                     <Button onClick={handlePostProduct} disabled={isLoading}>
-                         {isLoading ? <Loader2 className="animate-spin" /> : <><Send className="mr-2" /> Post Product</>}
+                         {isLoading ? <Loader2 className="animate-spin" /> : <><Send className="mr-2" /> {t.generated.postButton}</>}
                     </Button>
                  </CardFooter>
             </Card>

@@ -11,6 +11,7 @@
         "dashboard": "Dashboard",
         "products": "Products",
         "addProduct": "Add Product",
+        "storyCreation": "Story Creation",
         "discoverCrafts": "Discover Crafts",
         "cart": "Cart",
         "forArtisans": "For Artisans",
@@ -29,6 +30,10 @@
             "discoverCrafts": {
                 "title": "Discover Crafts",
                 "description": "Explore the rich history and cultural significance behind various artisanal crafts."
+            },
+            "storyCreation": {
+                "title": "AI Storytelling Assistant",
+                "description": "Convert your voice to text and create an engaging cultural narrative about your craft."
             }
         }
     },
@@ -36,10 +41,6 @@
         "generator": {
             "title": "AI Listing Generator",
             "description": "Fill in your product details and let AI do the writing.",
-            "productName": {
-                "label": "Product Name",
-                "placeholder": "e.g., Hand-painted Terracotta Vase"
-            },
             "productDescription": {
                 "label": "Product Description",
                 "placeholder": "Describe the materials, dimensions, and story behind your product."
@@ -48,20 +49,9 @@
                 "label": "Target Audience",
                 "placeholder": "e.g., Home decor enthusiasts, art collectors"
             },
-            "language": {
-                "label": "Language",
-                "placeholder": "Select language"
-            },
-            "button": "Generate Listing"
+            "button": "Generate Listing with AI"
         },
         "generated": {
-            "title": "Generated Content",
-            "description": "Review the AI-generated content below. Copy and use it in your listings.",
-            "loading": "Generating your listing...",
-            "generatedTitle": "Generated Title",
-            "generatedDescription": "Generated Description",
-            "generatedHashtags": "Generated Hashtags",
-            "placeholder": "Your generated content will appear here.",
             "postButton": "Post Product"
         }
     },
@@ -88,6 +78,32 @@
         "placeholder": {
             "title": "Ready to Explore?",
             "description": "Enter a craft name above to begin your journey."
+        }
+    },
+    "storyCreation": {
+        "title": "AI Storytelling Assistant",
+        "description": "Record your voice to share the story behind your cultural heritage and craft.",
+        "instructions": "Press the button below to begin telling your story. Press it again when you're finished.",
+        "recording": {
+            "start": "Start Recording",
+            "stop": "Stop Recording",
+            "success": "Recording successful! Now, generate a story.",
+            "error": "Microphone access is required.",
+            "ready": "Recording captured! Ready to generate story."
+        },
+        "story": {
+            "button": "Generate Story with AI",
+            "loading": "Crafting your narrative...",
+            "generatedTitle": "Your Generated Story",
+            "transcription": "Your Transcription",
+            "narrative": "Cultural Narrative",
+            "copied": "Story copied to clipboard!",
+            "noAudioError": "Please record a story first!",
+            "generationError": "Could not generate story.",
+            "placeholder": {
+                "title": "Let Your Voice Be Heard",
+                "description": "Use the button to record your story."
+            }
         }
     },
     "cart": {
@@ -160,5 +176,3 @@
         }
     }
 }
-
-    
