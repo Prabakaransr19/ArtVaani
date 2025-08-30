@@ -11,7 +11,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
 
@@ -25,6 +25,7 @@ export interface Product {
     image: string;
     hashtags: string;
     userId: string;
+    createdAt: Timestamp;
 }
 
 export default function ProductsPage() {
@@ -114,7 +115,7 @@ export default function ProductsPage() {
                         </CardHeader>
                         <CardContent className="p-4 flex-grow">
                             <div className="flex gap-2 mb-2 flex-wrap">
-                                {product.hashtags.split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
+                                {(product.hashtags || '').split(',').map(tag => tag.trim() && <Badge key={tag} variant="secondary">{tag.trim()}</Badge>)}
                             </div>
                             <h3 className="text-lg font-semibold">{product.name}</h3>
                             <p className="text-muted-foreground mt-1">{product.price}</p>
@@ -133,5 +134,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-    

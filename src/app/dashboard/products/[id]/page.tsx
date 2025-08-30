@@ -8,7 +8,7 @@ import Link from 'next/link';
 
 import { useAuth } from '@/hooks/use-auth';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, collection, query, where, onSnapshot, limit, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, onSnapshot, limit, serverTimestamp, setDoc, orderBy } from 'firebase/firestore';
 import type { Product } from '../page';
 
 import { useToast } from '@/hooks/use-toast';
@@ -58,15 +58,19 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (!product) return;
 
-    // Fetch related products (simple implementation: fetch recent products, excluding the current one)
+    // Fetch related products (simple implementation: fetch 3 most recent products)
+    // NOTE: The previous `where('__name__', '!=', product.id)` is not a supported query in Firestore.
     const relatedQuery = query(
       collection(db, 'products'),
-      where('__name__', '!=', product.id),
-      limit(3)
+      orderBy('createdAt', 'desc'),
+      limit(4) // Fetch 4, then filter out the current one on the client
     );
 
     const unsubscribe = onSnapshot(relatedQuery, (snapshot) => {
-      const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
+      const productsData = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() } as Product))
+        .filter(p => p.id !== product.id) // Filter out the current product
+        .slice(0, 3); // Take the top 3
       setRelatedProducts(productsData);
     });
 
@@ -201,4 +205,3 @@ export default function ProductDetailPage() {
   );
 }
 
-    
