@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { LanguageProvider } from '@/context/language-context';
 import { AuthProvider } from '@/context/auth-context';
+import { ProductProvider } from '@/context/product-context';
 
 export const metadata: Metadata = {
   title: 'ArtVaani',
@@ -32,11 +33,15 @@ export default function RootLayout({
       <body className="font-body antialiased" suppressHydrationWarning>
         <AuthProvider>
             <LanguageProvider>
-                {children}
-                <Toaster />
+                <ProductProvider>
+                    {children}
+                    <Toaster />
+                </ProductProvider>
             </LanguageProvider>
         </AuthProvider>
       </body>
     </html>
   );
 }
+
+    

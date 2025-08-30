@@ -12,6 +12,7 @@ import { generateProductListing, type GenerateProductListingOutput } from '@/ai/
 import { db, storage } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { Timestamp } from 'firebase/firestore';
 
 
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ import { Wand2, Loader2, Send, LogIn, Upload, Mic, Square, ShieldAlert } from 'l
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useProducts } from '@/context/product-context';
 
 const formSchema = z.object({
   description: z.string().min(10, 'Please provide a description of at least 10 characters.'),
@@ -82,6 +84,7 @@ export default function AddProductPage() {
   const { toast } = useToast();
   const { language, translations } = useLanguage();
   const { user } = useAuth();
+  const { addProduct } = useProducts();
   const router = useRouter();
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -194,30 +197,30 @@ export default function AddProductPage() {
 
     setIsLoading(true);
     try {
-        const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
-        const snapshot = await uploadString(imageRef, productImage.dataUrl, 'data_url');
-        const imageUrl = await getDownloadURL(snapshot.ref);
-
+        // This is the client-side only implementation for the hackathon
         const raw_price = parseFloat(generatedListing.suggestedPrice.replace(/[^0-9.-]+/g,""));
-
-        const productsCollection = collection(db, 'products');
-        await addDoc(productsCollection, {
+        
+        const newProduct = {
+            id: `new_${Date.now()}`,
             name: generatedListing.title,
             description: generatedListing.description,
-            story: "", // Story is now handled separately
+            story: "", 
             price: generatedListing.suggestedPrice,
             raw_price: isNaN(raw_price) ? 0 : raw_price,
             hashtags: generatedListing.hashtags,
-            image: imageUrl, 
+            image: productImage.preview, // Use local preview URL
             userId: user.uid,
-            createdAt: serverTimestamp(),
+            createdAt: Timestamp.now(), // Use client-side timestamp
             language: language,
-        });
-        toast({ title: 'Product Posted!', description: 'Your product is now live.' });
+        };
+
+        addProduct(newProduct);
+        toast({ title: 'Product Added!', description: 'Your product has been added to the list.' });
         router.push('/dashboard/products');
+
     } catch (error) {
-        console.error("Error posting product: ", error);
-        toast({ variant: 'destructive', title: 'Error', description: 'Could not post product.' });
+        console.error("Error posting product locally: ", error);
+        toast({ variant: 'destructive', title: 'Error', description: 'Could not add product locally.' });
     } finally {
         setIsLoading(false);
     }
@@ -355,3 +358,5 @@ export default function AddProductPage() {
     </div>
   );
 }
+
+    

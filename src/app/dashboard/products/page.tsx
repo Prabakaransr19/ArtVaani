@@ -14,6 +14,8 @@ import { db } from '@/lib/firebase';
 import { doc, getDoc, collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { useLanguage } from '@/context/language-context';
+import { useProducts } from '@/context/product-context';
+
 
 export interface Product {
     id: string;
@@ -31,28 +33,9 @@ export interface Product {
 export default function ProductsPage() {
     const { user } = useAuth();
     const router = useRouter();
-    const { toast } = useToast();
     const { translations } = useLanguage();
-    
-    const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { products, loading } = useProducts();
     const [isArtisan, setIsArtisan] = useState(false);
-
-    useEffect(() => {
-        const productsQuery = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
-        
-        const unsubscribe = onSnapshot(productsQuery, (snapshot) => {
-            const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
-            setProducts(productsData);
-            setLoading(false);
-        }, (error) => {
-            console.error("Error fetching products:", error);
-            toast({ variant: 'destructive', title: 'Error', description: 'Could not fetch products.' });
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
-    }, [toast]);
 
     useEffect(() => {
         const checkUserRole = async () => {
@@ -76,6 +59,9 @@ export default function ProductsPage() {
   }
 
   const isValidImageUrl = (url: string) => {
+      if (!url) return false;
+      // For the demo, blob URLs from local preview are also valid
+      if (url.startsWith('blob:')) return true;
       try {
           const parsedUrl = new URL(url);
           return parsedUrl.protocol === 'https:' && parsedUrl.hostname.includes('firebasestorage.googleapis.com');
@@ -145,3 +131,5 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+    
