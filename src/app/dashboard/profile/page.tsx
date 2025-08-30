@@ -8,7 +8,7 @@ import { useForm, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { db } from '@/lib/firebase';
-import { doc, getDoc, setDoc, collection, query, where, onSnapshot, orderBy } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, where, onSnapshot } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
 import { useLanguage } from '@/context/language-context';
 import Image from 'next/image';
@@ -115,7 +115,7 @@ export default function ProfilePage() {
         return;
     };
 
-    const productsQuery = query(collection(db, 'products'), where('userId', '==', user.uid), orderBy('createdAt', 'desc'));
+    const productsQuery = query(collection(db, 'products'), where('userId', '==', user.uid));
 
     const unsubscribe = onSnapshot(productsQuery, (snapshot) => {
         const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Product));
