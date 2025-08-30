@@ -34,7 +34,7 @@ const GenerateProductListingOutputSchema = z.object({
   description: z.string().describe('A detailed and engaging description of the product.'),
   story: z.string().describe('A cultural story about the product, its origins, or the artisan.'),
   hashtags: z.string().describe("A comma-separated list of relevant tags or keywords for the product listing (e.g., 'handmade, terracotta, decorative')."),
-  suggestedPrice: z.string().describe('A suggested selling price in Indian Rupees (₹), based on the product analysis. This is a suggestion, not based on real-time market data.'),
+  suggestedPrice: z.string().describe('A suggested selling price in Indian Rupees (₹), based on the product analysis. The output MUST be a string containing only the currency symbol and the number (e.g., "₹1,499") and nothing else.'),
 });
 export type GenerateProductListingOutput = z.infer<typeof GenerateProductListingOutputSchema>;
 
@@ -58,7 +58,7 @@ const prompt = ai.definePrompt({
   3.  **Write a Detailed Description:** Expand on the artisan's input to write an engaging marketing description. Highlight the craftsmanship, materials, and potential uses.
   4.  **Craft a Cultural Story:** Based on the product type and artisan's description, create a short, engaging story about the product's cultural significance, the artisan's journey, or the craft's history.
   5.  **Suggest Tags:** Provide a comma-separated list of popular and trending tags or keywords that would increase visibility. Do not include the '#' symbol.
-  6.  **Suggest a Price:** Based on your analysis of the product's materials, complexity, and type, suggest a reasonable selling price in Indian Rupees (e.g., ₹1,499). Preface it with a short disclaimer that this is a suggestion.
+  6.  **Suggest a Price:** Based on your analysis of the product's materials, complexity, and type, suggest a reasonable selling price in Indian Rupees. CRITICAL: This output string must ONLY contain the currency symbol and the price (e.g., "₹1,499"). Do not add any other words, disclaimers, or text.
   7.  **Language:** Generate all content in the specified language: {{{language}}}.
   8.  **Target Audience:** Keep the tone and style appropriate for the target audience: {{{targetAudience}}}.
 
@@ -83,4 +83,3 @@ const generateProductListingFlow = ai.defineFlow(
     return output!;
   }
 );
-
