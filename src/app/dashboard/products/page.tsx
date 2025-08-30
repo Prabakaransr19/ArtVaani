@@ -75,6 +75,15 @@ export default function ProductsPage() {
     );
   }
 
+  const isValidImageUrl = (url: string) => {
+      try {
+          const parsedUrl = new URL(url);
+          return parsedUrl.protocol === 'https:' && parsedUrl.hostname.includes('firebasestorage.googleapis.com');
+      } catch (e) {
+          return false;
+      }
+  }
+
   return (
     <div className='flex flex-col gap-6'>
         {user && !isArtisan && (
@@ -104,13 +113,15 @@ export default function ProductsPage() {
                     <Link key={product.id} href={`/dashboard/products/${product.id}`} className="flex">
                         <Card className="flex flex-col overflow-hidden hover:shadow-lg transition-shadow duration-300 w-full">
                         <CardHeader className="p-0">
-                            <div className="relative aspect-video">
-                                <Image 
-                                    src={product.image} 
-                                    alt={product.name} 
-                                    fill 
-                                    className="object-cover"
-                                />
+                            <div className="relative aspect-video bg-muted">
+                                {isValidImageUrl(product.image) && (
+                                    <Image 
+                                        src={product.image} 
+                                        alt={product.name} 
+                                        fill 
+                                        className="object-cover"
+                                    />
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="p-4 flex-grow">
