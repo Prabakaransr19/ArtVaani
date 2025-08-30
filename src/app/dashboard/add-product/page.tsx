@@ -32,10 +32,47 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+// Helper function to resize the image
+const resizeImage = (file: File, maxSize: number): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+
+        if (width > height) {
+          if (width > maxSize) {
+            height *= maxSize / width;
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width *= maxSize / height;
+            height = maxSize;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Could not get canvas context'));
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.8)); // Use JPEG for smaller file size
+      };
+      img.onerror = reject;
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
+
 export default function AddProductPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [generatedListing, setGeneratedListing] = useState<GenerateProductListingOutput | null>(null);
-  const [productImage, setProductImage] = useState<{ file: File, preview: string, dataUrl: string } | null>(null);
+  const [productImage, setProductImage] = useState<{ file: File, preview: string, dataUrl: string, thumbnailUrl: string } | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [step, setStep] = useState(1);
@@ -76,15 +113,25 @@ export default function AddProductPage() {
     defaultValues: { description: '', targetAudience: '' },
   });
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const preview = URL.createObjectURL(file);
+      
+      // We need the original data URL for the final upload
       const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        setProductImage({ file, preview: URL.createObjectURL(file), dataUrl });
-      };
       reader.readAsDataURL(file);
+      reader.onload = async (event) => {
+          const dataUrl = event.target?.result as string;
+          try {
+             // And we create a smaller thumbnail to send to the AI
+            const thumbnailUrl = await resizeImage(file, 512); // Resize to max 512px
+            setProductImage({ file, preview, dataUrl, thumbnailUrl });
+          } catch (error) {
+            console.error("Image resizing failed:", error);
+            toast({ variant: 'destructive', title: 'Image processing failed.' });
+          }
+      };
     }
   };
 
@@ -132,7 +179,7 @@ export default function AddProductPage() {
         const result = await generateProductListing({
           ...data,
           language: language,
-          photoDataUri: productImage.dataUrl,
+          photoDataUri: productImage.thumbnailUrl, // Use the smaller thumbnail for AI processing
         });
         setGeneratedListing(result);
         setStep(2); // Move to the editing step
@@ -149,9 +196,9 @@ export default function AddProductPage() {
 
     setIsLoading(true);
     try {
-        // 1. Upload image to Firebase Storage
+        // 1. Upload the ORIGINAL, full-quality image to Firebase Storage
         const imageRef = ref(storage, `products/${user.uid}/${Date.now()}_${productImage.file.name}`);
-        // We upload the data URL string, not the file blob.
+        // We upload the original data URL string, not the thumbnail.
         const snapshot = await uploadString(imageRef, productImage.dataUrl, 'data_url');
         const imageUrl = await getDownloadURL(snapshot.ref);
 
@@ -314,3 +361,5 @@ export default function AddProductPage() {
     </div>
   );
 }
+
+    
