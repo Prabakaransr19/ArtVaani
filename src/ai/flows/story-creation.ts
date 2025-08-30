@@ -10,7 +10,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { googleAI } from '@genkit-ai/googleai';
 
 // Define the input schema for the story creation flow
 const StoryCreationInputSchema = z.object({
@@ -71,7 +70,7 @@ const storyCreationFlow = ai.defineFlow(
   async ({ audioDataUri, language }) => {
     // 1. Transcribe the audio
     const { text: transcription } = await ai.generate({
-      model: googleAI.model('gemini-2.0-flash'), // Or another suitable model
+      model: 'gemini-2.0-flash', // Or another suitable model
       prompt: [
         {
           media: {
