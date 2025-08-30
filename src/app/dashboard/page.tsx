@@ -26,29 +26,6 @@ import {
 } from "@/components/ui/table"
 import { Badge } from '@/components/ui/badge';
 
-const chartData = [
-  { month: "Jan", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Feb", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Mar", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Apr", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "May", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Jun", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Jul", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Aug", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Sep", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Oct", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Nov", total: Math.floor(Math.random() * 5000) + 1000 },
-  { month: "Dec", total: Math.floor(Math.random() * 5000) + 1000 },
-]
-
-const recentSales = [
-    { id: "1", customer: "Olivia Martin", email: "olivia.martin@email.com", amount: "₹1,999.00", status: "fulfilled" },
-    { id: "2", customer: "Jackson Lee", email: "jackson.lee@email.com", amount: "₹3,299.00", status: "fulfilled" },
-    { id: "3", customer: "Isabella Nguyen", email: "isabella.nguyen@email.com", amount: "₹750.00", status: "pending" },
-    { id: "4", customer: "William Kim", email: "will@email.com", amount: "₹2,499.00", status: "fulfilled" },
-    { id: "5", customer: "Sofia Davis", email: "sofia.davis@email.com", amount: "₹1,299.00", status: "fulfilled" },
-]
-
 
 export default function DashboardPage() {
     const { user, loading } = useAuth();
@@ -154,26 +131,26 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Sales (Placeholder)
+              Sales
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+2350</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              +180.1% from last month
+              No sales data available yet
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Order Count (Placeholder)</CardTitle>
+            <CardTitle className="text-sm font-medium">Order Count</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+12,234</div>
+            <div className="text-2xl font-bold">0</div>
             <p className="text-xs text-muted-foreground">
-              +19% from last month
+              No order data available yet
             </p>
           </CardContent>
         </Card>
@@ -200,65 +177,28 @@ export default function DashboardPage() {
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Overview (Placeholder)</CardTitle>
+            <CardTitle>Overview</CardTitle>
+             <CardDescription>
+              Your sales data will appear here once you receive your first order.
+            </CardDescription>
           </CardHeader>
           <CardContent className="pl-2">
-             <ResponsiveContainer width="100%" height={350}>
-              <BarChart data={chartData}>
-                <XAxis
-                  dataKey="month"
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                />
-                <YAxis
-                  stroke="#888888"
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(value) => `₹${value}`}
-                />
-                <Bar
-                  dataKey="total"
-                  fill="hsl(var(--primary))"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
+             <div className="h-[350px] w-full flex items-center justify-center bg-muted/50 rounded-lg">
+                <p className="text-muted-foreground">No sales data yet</p>
+             </div>
           </CardContent>
         </Card>
         <Card className="col-span-4 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Recent Sales (Placeholder)</CardTitle>
+            <CardTitle>Recent Sales</CardTitle>
             <CardDescription>
-              You made 265 sales this month.
+              Your recent sales will be displayed here.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Customer</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentSales.map(sale => (
-                     <TableRow key={sale.id}>
-                        <TableCell>
-                            <div className="font-medium">{sale.customer}</div>
-                            <div className="text-sm text-muted-foreground hidden md:inline">{sale.email}</div>
-                        </TableCell>
-                        <TableCell>
-                            <Badge variant={sale.status === 'fulfilled' ? 'default' : 'secondary'}>{sale.status}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{sale.amount}</TableCell>
-                     </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+             <div className="h-[350px] w-full flex items-center justify-center bg-muted/50 rounded-lg">
+                <p className="text-muted-foreground">No recent sales</p>
+             </div>
           </CardContent>
         </Card>
       </div>
@@ -266,5 +206,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
