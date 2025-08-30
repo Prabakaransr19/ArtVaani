@@ -3,24 +3,19 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
   CardContent,
 } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ArrowUp, ArrowRight, PackagePlus, Search, DollarSign, Users, CreditCard } from 'lucide-react';
+import { Loader2, DollarSign, Users, CreditCard, Package, ShoppingBag } from 'lucide-react';
 import { useLanguage } from '@/context/language-context';
 import { useAuth } from '@/hooks/use-auth';
-import { Loader2 } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
-
 import {
   Table,
   TableBody,
@@ -56,11 +51,15 @@ const recentSales = [
 
 
 export default function DashboardPage() {
-    const { translations } = useLanguage();
     const { user, loading } = useAuth();
     const router = useRouter();
     const [isArtisan, setIsArtisan] = useState(false);
     const [isRoleLoading, setIsRoleLoading] = useState(true);
+    const [stats, setStats] = useState({
+        totalProducts: 0,
+        newProductsThisMonth: 0,
+    });
+    const [statsLoading, setStatsLoading] = useState(true);
 
     useEffect(() => {
         if (loading) return;
@@ -90,6 +89,37 @@ export default function DashboardPage() {
         checkUserRole();
 
     }, [user, loading, router]);
+    
+    useEffect(() => {
+        if (!user || !isArtisan) return;
+
+        const fetchStats = async () => {
+            setStatsLoading(true);
+            const productsRef = collection(db, 'products');
+            const q = query(productsRef, where('userId', '==', user.uid));
+            
+            const querySnapshot = await getDocs(q);
+            const products = querySnapshot.docs.map(doc => doc.data());
+            
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            const thirtyDaysAgoTimestamp = Timestamp.fromDate(thirtyDaysAgo);
+
+            const newProductsThisMonth = products.filter(p => {
+                const createdAt = p.createdAt as Timestamp;
+                return createdAt && createdAt >= thirtyDaysAgoTimestamp;
+            }).length;
+
+            setStats({
+                totalProducts: products.length,
+                newProductsThisMonth: newProductsThisMonth,
+            });
+
+            setStatsLoading(false);
+        };
+
+        fetchStats();
+    }, [user, isArtisan]);
 
 
   if (loading || isRoleLoading || !isArtisan) {
@@ -106,21 +136,25 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Total Revenue
+              Total Products Listed
             </CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <ShoppingBag className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹45,231.89</div>
-            <p className="text-xs text-muted-foreground">
-              +20.1% from last month
-            </p>
+            {statsLoading ? <Loader2 className="animate-spin" /> : (
+              <>
+                <div className="text-2xl font-bold">{stats.totalProducts}</div>
+                <p className="text-xs text-muted-foreground">
+                  All-time products you have listed
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Sales
+              Sales (Placeholder)
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -133,7 +167,7 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Order Count</CardTitle>
+            <CardTitle className="text-sm font-medium">Order Count (Placeholder)</CardTitle>
             <CreditCard className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -146,15 +180,19 @@ export default function DashboardPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              New Products
+              New Products This Month
             </CardTitle>
-            <PackagePlus className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-xs text-muted-foreground">
-              +201 since last month
-            </p>
+            {statsLoading ? <Loader2 className="animate-spin" /> : (
+                <>
+                    <div className="text-2xl font-bold">+{stats.newProductsThisMonth}</div>
+                    <p className="text-xs text-muted-foreground">
+                      New products in the last 30 days
+                    </p>
+                </>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -162,7 +200,7 @@ export default function DashboardPage() {
        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <Card className="col-span-4">
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>Overview (Placeholder)</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
              <ResponsiveContainer width="100%" height={350}>
@@ -192,7 +230,7 @@ export default function DashboardPage() {
         </Card>
         <Card className="col-span-4 lg:col-span-3">
           <CardHeader>
-            <CardTitle>Recent Sales</CardTitle>
+            <CardTitle>Recent Sales (Placeholder)</CardTitle>
             <CardDescription>
               You made 265 sales this month.
             </CardDescription>
@@ -228,3 +266,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
